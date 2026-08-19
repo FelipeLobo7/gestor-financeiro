@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gestor financeiro simples para pequenas empresas." />
+  <title>Gestor Financeiro da Empresa</title>
+
+  <style>
+    :root {
+      --fundo: #f4f7fb;
+      --cartao: #ffffff;
+      --texto: #172033;
+      --texto-suave: #667085;
+      --borda: #e4e7ec;
+      --primaria: #3157d5;
+      --primaria-escura: #2545ae;
+      --verde: #15803d;
+      --verde-fundo: #ecfdf3;
+      --vermelho: #c62828;
+      --vermelho-fundo: #fff1f1;
+      --amarelo: #b76e00;
+      --amarelo-fundo: #fff8e6;
+      --sombra: 0 10px 30px rgba(16, 24, 40, 0.07);
+      --raio: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background: var(--fundo);
+      color: var(--texto);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .topo {
+      background: linear-gradient(135deg, #183a9e, #3157d5);
+      color: white;
+      padding: 34px 20px 74px;
+    }
+
+    .topo-conteudo,
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topo h1 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 4vw, 40px);
+    }
+
+    .topo p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.86);
+      max-width: 720px;
+      line-height: 1.5;
+    }
+
+    .container {
+      margin-top: -44px;
+      padding-bottom: 48px;
+    }
+
+    .resumo {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .cartao {
+      background: var(--cartao);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      box-shadow: var(--sombra);
+    }
+
+    .cartao-resumo {
+      padding: 20px;
+      min-height: 135px;
+    }
+
+    .rotulo {
+      color: var(--texto-suave);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .valor-resumo {
+      font-size: clamp(24px, 3vw, 31px);
+      font-weight: 800;
+      line-height: 1.15;
+      word-break: break-word;
+    }
+
+    .positivo {
+      color: var(--verde);
+    }
+
+    .negativo {
+      color: var(--vermelho);
+    }
+
+    .neutro {
+      color: var(--primaria);
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--texto-suave);
+      line-height: 1.4;
+    }
+
+    .grade-principal {
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .painel {
+      padding: 22px;
+    }
+
+    .painel h2 {
+      margin: 0 0 18px;
+      font-size: 20px;
+    }
+
+    .campo {
+      margin-bottom: 15px;
+    }
+
+    .campo label {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 7px;
+    }
+
+    .campo input,
+    .campo select {
+      width: 100%;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      padding: 11px 12px;
+      background: #fff;
+      color: var(--texto);
+      outline: none;
+    }
+
+    .campo input:focus,
+    .campo select:focus {
+      border-color: var(--primaria);
+      box-shadow: 0 0 0 3px rgba(49, 87, 213, 0.12);
+    }
+
+    .linha-campos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .tipo-botoes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .tipo-botoes label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      padding: 11px 8px;
+      cursor: pointer;
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .tipo-botoes input {
+      width: auto;
+      margin: 0;
+    }
+
+    .botao-principal {
+      width: 100%;
+      border: none;
+      border-radius: 11px;
+      padding: 13px 18px;
+      font-weight: 800;
+      background: var(--primaria);
+      color: white;
+      transition: 0.2s ease;
+    }
+
+    .botao-principal:hover {
+      background: var(--primaria-escura);
+      transform: translateY(-1px);
+    }
+
+    .botao-secundario,
+    .botao-perigo {
+      border: 1px solid var(--borda);
+      border-radius: 9px;
+      padding: 9px 12px;
+      background: #fff;
+      color: var(--texto);
+      font-weight: 700;
+    }
+
+    .botao-secundario:hover {
+      border-color: var(--primaria);
+      color: var(--primaria);
+    }
+
+    .botao-perigo {
+      color: var(--vermelho);
+    }
+
+    .botao-perigo:hover {
+      background: var(--vermelho-fundo);
+      border-color: #f3b6b6;
+    }
+
+    .acoes-formulario {
+      display: flex;
+      gap: 10px;
+      margin-top: 7px;
+    }
+
+    .acoes-formulario .botao-principal {
+      flex: 1;
+    }
+
+    .oculto {
+      display: none !important;
+    }
+
+    .barra-progresso {
+      margin-top: 16px;
+    }
+
+    .barra-fundo {
+      width: 100%;
+      height: 10px;
+      background: #e9edf7;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .barra-preenchimento {
+      height: 100%;
+      width: 0%;
+      background: var(--primaria);
+      border-radius: 999px;
+      transition: width 0.35s ease;
+    }
+
+    .barra-legenda {
+      margin-top: 8px;
+      color: var(--texto-suave);
+      font-size: 13px;
+    }
+
+    .historico-topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .historico-topo h2 {
+      margin: 0;
+    }
+
+    .filtros {
+      display: grid;
+      grid-template-columns: minmax(170px, 1.5fr) minmax(135px, 1fr) minmax(145px, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .filtros input,
+    .filtros select {
+      width: 100%;
+      border: 1px solid var(--borda);
+      border-radius: 9px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .tabela-container {
+      overflow-x: auto;
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th,
+    td {
+      padding: 13px 12px;
+      border-bottom: 1px solid var(--borda);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: var(--texto-suave);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tbody tr:hover {
+      background: #fafbff;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .etiqueta {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .etiqueta-receita {
+      background: var(--verde-fundo);
+      color: var(--verde);
+    }
+
+    .etiqueta-despesa {
+      background: var(--vermelho-fundo);
+      color: var(--vermelho);
+    }
+
+    .acoes-tabela {
+      display: flex;
+      gap: 7px;
+    }
+
+    .botao-icone {
+      border: 1px solid var(--borda);
+      background: #fff;
+      border-radius: 8px;
+      padding: 7px 9px;
+      font-weight: 700;
+      color: var(--texto-suave);
+    }
+
+    .botao-icone:hover {
+      color: var(--primaria);
+      border-color: var(--primaria);
+    }
+
+    .botao-icone.excluir:hover {
+      color: var(--vermelho);
+      border-color: #e8a6a6;
+      background: var(--vermelho-fundo);
+    }
+
+    .estado-vazio {
+      padding: 42px 20px;
+      text-align: center;
+      color: var(--texto-suave);
+    }
+
+    .estado-vazio strong {
+      display: block;
+      color: var(--texto);
+      margin-bottom: 7px;
+    }
+
+    .rodape-acoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 16px;
+    }
+
+    .arquivo-importacao {
+      display: none;
+    }
+
+    .aviso {
+      margin-top: 14px;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      background: var(--amarelo-fundo);
+      color: var(--amarelo);
+      border: 1px solid #f3d593;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 100;
+      background: #101828;
+      color: white;
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--sombra);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: 0.25s ease;
+      max-width: min(360px, calc(100% - 40px));
+    }
+
+    .toast.mostrar {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tela-login {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: linear-gradient(135deg, #183a9e, #3157d5);
+    }
+
+    .login-cartao {
+      width: min(430px, 100%);
+      padding: 28px;
+    }
+
+    .login-cartao h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .login-cartao > p {
+      margin: 0 0 22px;
+      color: var(--texto-suave);
+      line-height: 1.5;
+    }
+
+    .login-acoes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .mensagem-login {
+      min-height: 20px;
+      margin: 14px 0 0;
+      color: var(--texto-suave);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .mensagem-login.erro {
+      color: var(--vermelho);
+    }
+
+    .conta-barra {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .conta-email {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .botao-sair {
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 9px;
+      padding: 8px 12px;
+      background: transparent;
+      color: white;
+      font-weight: 700;
+    }
+
+    .botao-sair:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+      transform: none !important;
+    }
+
+    @media (max-width: 980px) {
+      .resumo {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .grade-principal {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topo {
+        padding-top: 26px;
+      }
+
+      .resumo {
+        grid-template-columns: 1fr;
+      }
+
+      .filtros,
+      .linha-campos {
+        grid-template-columns: 1fr;
+      }
+
+      .historico-topo {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .acoes-formulario {
+        flex-direction: column;
+      }
+
+      .login-acoes {
+        grid-template-columns: 1fr;
+      }
+
+      .conta-barra {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .topo {
+        background: white;
+        color: black;
+        padding: 20px 0;
+      }
+
+      .topo p,
+      .formulario-painel,
+      .filtros,
+      .rodape-acoes,
+      .acoes-tabela,
+      .aviso {
+        display: none !important;
+      }
+
+      .container {
+        margin-top: 0;
+        width: 100%;
+      }
+
+      .grade-principal {
+        display: block;
+      }
+
+      .cartao {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <section id="telaLogin" class="tela-login">
+    <div class="cartao login-cartao">
+      <h1>Gestor Financeiro</h1>
+      <p>Entre para acessar seus lançamentos com segurança em qualquer aparelho.</p>
+
+      <form id="formLogin">
+        <div class="campo">
+          <label for="emailLogin">E-mail</label>
+          <input id="emailLogin" type="email" autocomplete="email" required />
+        </div>
+
+        <div class="campo">
+          <label for="senhaLogin">Senha</label>
+          <input
+            id="senhaLogin"
+            type="password"
+            minlength="6"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <div class="login-acoes">
+          <button class="botao-principal" id="botaoEntrar" type="submit">Entrar</button>
+          <button class="botao-secundario" id="botaoCriarConta" type="button">Criar conta</button>
+        </div>
+
+        <p id="mensagemLogin" class="mensagem-login"></p>
+      </form>
+    </div>
+  </section>
+
+  <div id="aplicativo" class="oculto">
+  <header class="topo">
+    <div class="topo-conteudo">
+      <h1>Gestor Financeiro</h1>
+      <p>
+        Registre todos os custos e as vendas da sua empresa para acompanhar quando
+        o investimento será recuperado e o saldo começará a ficar positivo.
+      </p>
+      <div class="conta-barra">
+        <span id="emailUsuario" class="conta-email"></span>
+        <button id="botaoSair" class="botao-sair" type="button">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="resumo" aria-label="Resumo financeiro">
+      <article class="cartao cartao-resumo">
+        <div class="rotulo">Total de receitas</div>
+        <div id="totalReceitas" class="valor-resumo positivo">R$ 0,00</div>
+        <div class="status">Entradas, vendas e outros recebimentos.</div>
+      </article>
+
+      <article class="cartao cartao-resumo">
+        <div class="rotulo">Total de despesas</div>
+        <div id="totalDespesas" class="valor-resumo negativo">R$ 0,00</div>
+        <div class="status">Embalagens, produtos, taxas, contabilidade e outros custos.</div>
+      </article>
+
+      <article class="cartao cartao-resumo">
+        <div class="rotulo">Saldo atual</div>
+        <div id="saldoAtual" class="valor-resumo neutro">R$ 0,00</div>
+        <div id="textoSaldo" class="status">Cadastre seus primeiros lançamentos.</div>
+      </article>
+
+      <article class="cartao cartao-resumo">
+        <div class="rotulo">Situação do negócio</div>
+        <div id="situacaoNegocio" class="valor-resumo neutro">Iniciando</div>
+        <div id="detalheSituacao" class="status">O sistema mostrará quanto falta para recuperar os custos.</div>
+
+        <div class="barra-progresso">
+          <div class="barra-fundo">
+            <div id="barraProgresso" class="barra-preenchimento"></div>
+          </div>
+          <div id="legendaProgresso" class="barra-legenda">0% dos custos recuperados</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="grade-principal">
+      <aside class="cartao painel formulario-painel">
+        <h2 id="tituloFormulario">Novo lançamento</h2>
+
+        <form id="formLancamento">
+          <input type="hidden" id="lancamentoId" />
+
+          <div class="campo">
+            <label>Tipo de lançamento</label>
+            <div class="tipo-botoes">
+              <label>
+                <input type="radio" name="tipo" value="despesa" checked />
+                Despesa
+              </label>
+              <label>
+                <input type="radio" name="tipo" value="receita" />
+                Receita
+              </label>
+            </div>
+          </div>
+
+          <div class="linha-campos">
+            <div class="campo">
+              <label for="data">Data</label>
+              <input type="date" id="data" required />
+            </div>
+
+            <div class="campo">
+              <label for="valor">Valor</label>
+              <input
+                type="number"
+                id="valor"
+                min="0.01"
+                step="0.01"
+                placeholder="0,00"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="descricao">Descrição</label>
+            <input
+              type="text"
+              id="descricao"
+              maxlength="100"
+              placeholder="Ex.: compra de caixas para envio"
+              required
+            />
+          </div>
+
+          <div class="campo">
+            <label for="categoria">Categoria</label>
+            <select id="categoria" required>
+              <option value="Compra de produtos">Compra de produtos</option>
+              <option value="Embalagens">Embalagens</option>
+              <option value="Contabilidade">Contabilidade</option>
+              <option value="Taxas da Amazon">Taxas da Amazon</option>
+              <option value="Frete">Frete</option>
+              <option value="Impostos">Impostos</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Venda de produtos">Venda de produtos</option>
+              <option value="Aporte pessoal">Aporte pessoal</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="observacao">Observação, opcional</label>
+            <input
+              type="text"
+              id="observacao"
+              maxlength="160"
+              placeholder="Ex.: compra para estoque inicial"
+            />
+          </div>
+
+          <div class="acoes-formulario">
+            <button class="botao-principal" type="submit" id="botaoSalvar">
+              Adicionar lançamento
+            </button>
+            <button
+              class="botao-secundario oculto"
+              type="button"
+              id="botaoCancelarEdicao"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+
+        <div class="aviso">
+          Os dados são sincronizados com o Supabase e ficam disponíveis em seus aparelhos.
+          Use <strong>Exportar backup</strong> periodicamente para manter uma cópia adicional.
+        </div>
+      </aside>
+
+      <section class="cartao painel">
+        <div class="historico-topo">
+          <h2>Histórico de lançamentos</h2>
+          <button class="botao-secundario" type="button" onclick="window.print()">
+            Imprimir relatório
+          </button>
+        </div>
+
+        <div class="filtros">
+          <input
+            type="search"
+            id="filtroBusca"
+            placeholder="Buscar descrição ou categoria"
+          />
+
+          <select id="filtroTipo">
+            <option value="todos">Receitas e despesas</option>
+            <option value="receita">Somente receitas</option>
+            <option value="despesa">Somente despesas</option>
+          </select>
+
+          <input type="month" id="filtroMes" />
+        </div>
+
+        <div class="tabela-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaLancamentos"></tbody>
+          </table>
+
+          <div id="estadoVazio" class="estado-vazio">
+            <strong>Nenhum lançamento cadastrado</strong>
+            Adicione suas despesas iniciais e depois registre suas vendas.
+          </div>
+        </div>
+
+        <div class="rodape-acoes">
+          <button class="botao-secundario" id="exportarCsv" type="button">
+            Exportar CSV
+          </button>
+
+          <button class="botao-secundario" id="exportarJson" type="button">
+            Exportar backup
+          </button>
+
+          <button class="botao-secundario" id="importarJson" type="button">
+            Importar backup
+          </button>
+
+          <input
+            class="arquivo-importacao"
+            id="arquivoImportacao"
+            type="file"
+            accept=".json,application/json"
+          />
+
+          <button class="botao-perigo" id="apagarTudo" type="button">
+            Apagar todos os dados
+          </button>
+        </div>
+      </section>
+    </section>
+  </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="text/plain" id="codigoLocalAntigo">
+    const CHAVE_STORAGE = "gestorFinanceiroEmpresa_v1";
+
+    const elementos = {
+      form: document.getElementById("formLancamento"),
+      id: document.getElementById("lancamentoId"),
+      data: document.getElementById("data"),
+      valor: document.getElementById("valor"),
+      descricao: document.getElementById("descricao"),
+      categoria: document.getElementById("categoria"),
+      observacao: document.getElementById("observacao"),
+      tituloFormulario: document.getElementById("tituloFormulario"),
+      botaoSalvar: document.getElementById("botaoSalvar"),
+      botaoCancelar: document.getElementById("botaoCancelarEdicao"),
+      tabela: document.getElementById("tabelaLancamentos"),
+      estadoVazio: document.getElementById("estadoVazio"),
+      totalReceitas: document.getElementById("totalReceitas"),
+      totalDespesas: document.getElementById("totalDespesas"),
+      saldoAtual: document.getElementById("saldoAtual"),
+      textoSaldo: document.getElementById("textoSaldo"),
+      situacaoNegocio: document.getElementById("situacaoNegocio"),
+      detalheSituacao: document.getElementById("detalheSituacao"),
+      barraProgresso: document.getElementById("barraProgresso"),
+      legendaProgresso: document.getElementById("legendaProgresso"),
+      filtroBusca: document.getElementById("filtroBusca"),
+      filtroTipo: document.getElementById("filtroTipo"),
+      filtroMes: document.getElementById("filtroMes"),
+      exportarCsv: document.getElementById("exportarCsv"),
+      exportarJson: document.getElementById("exportarJson"),
+      importarJson: document.getElementById("importarJson"),
+      arquivoImportacao: document.getElementById("arquivoImportacao"),
+      apagarTudo: document.getElementById("apagarTudo"),
+      toast: document.getElementById("toast")
+    };
+
+    let lancamentos = carregarLancamentos();
+
+    function hojeIso() {
+      const hoje = new Date();
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+      const dia = String(hoje.getDate()).padStart(2, "0");
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    elementos.data.value = hojeIso();
+
+    function carregarLancamentos() {
+      try {
+        const salvo = localStorage.getItem(CHAVE_STORAGE);
+        const dados = salvo ? JSON.parse(salvo) : [];
+        return Array.isArray(dados) ? dados : [];
+      } catch (erro) {
+        console.error("Erro ao carregar os dados:", erro);
+        return [];
+      }
+    }
+
+    function salvarLancamentos() {
+      localStorage.setItem(CHAVE_STORAGE, JSON.stringify(lancamentos));
+    }
+
+    function moeda(valor) {
+      return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      }).format(Number(valor) || 0);
+    }
+
+    function formatarData(dataIso) {
+      if (!dataIso) return "";
+      const [ano, mes, dia] = dataIso.split("-");
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    function escaparHtml(texto) {
+      return String(texto ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function gerarId() {
+      if (window.crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function obterTipoSelecionado() {
+      return document.querySelector('input[name="tipo"]:checked').value;
+    }
+
+    function selecionarTipo(tipo) {
+      const radio = document.querySelector(`input[name="tipo"][value="${tipo}"]`);
+      if (radio) radio.checked = true;
+    }
+
+    function mostrarToast(mensagem) {
+      elementos.toast.textContent = mensagem;
+      elementos.toast.classList.add("mostrar");
+
+      clearTimeout(mostrarToast.timer);
+      mostrarToast.timer = setTimeout(() => {
+        elementos.toast.classList.remove("mostrar");
+      }, 2600);
+    }
+
+    function limparFormulario() {
+      elementos.form.reset();
+      elementos.id.value = "";
+      elementos.data.value = hojeIso();
+      selecionarTipo("despesa");
+      elementos.tituloFormulario.textContent = "Novo lançamento";
+      elementos.botaoSalvar.textContent = "Adicionar lançamento";
+      elementos.botaoCancelar.classList.add("oculto");
+    }
+
+    function atualizarResumo() {
+      const receitas = lancamentos
+        .filter(item => item.tipo === "receita")
+        .reduce((total, item) => total + Number(item.valor), 0);
+
+      const despesas = lancamentos
+        .filter(item => item.tipo === "despesa")
+        .reduce((total, item) => total + Number(item.valor), 0);
+
+      const saldo = receitas - despesas;
+      const percentualRecuperado =
+        despesas > 0 ? Math.min((receitas / despesas) * 100, 100) : 0;
+
+      elementos.totalReceitas.textContent = moeda(receitas);
+      elementos.totalDespesas.textContent = moeda(despesas);
+      elementos.saldoAtual.textContent = moeda(saldo);
+
+      elementos.saldoAtual.classList.remove("positivo", "negativo", "neutro");
+
+      if (saldo > 0) {
+        elementos.saldoAtual.classList.add("positivo");
+        elementos.situacaoNegocio.textContent = "Saldo positivo";
+        elementos.situacaoNegocio.className = "valor-resumo positivo";
+        elementos.textoSaldo.textContent =
+          `A empresa já superou os custos em ${moeda(saldo)}.`;
+        elementos.detalheSituacao.textContent =
+          "As receitas acumuladas já são maiores que as despesas.";
+      } else if (saldo < 0) {
+        elementos.saldoAtual.classList.add("negativo");
+        elementos.situacaoNegocio.textContent = "Recuperando custos";
+        elementos.situacaoNegocio.className = "valor-resumo negativo";
+        elementos.textoSaldo.textContent =
+          `Faltam ${moeda(Math.abs(saldo))} para o saldo chegar a zero.`;
+        elementos.detalheSituacao.textContent =
+          "Continue registrando as vendas para acompanhar a recuperação do investimento.";
+      } else {
+        elementos.saldoAtual.classList.add("neutro");
+        elementos.situacaoNegocio.textContent =
+          lancamentos.length ? "Ponto de equilíbrio" : "Iniciando";
+        elementos.situacaoNegocio.className = "valor-resumo neutro";
+        elementos.textoSaldo.textContent =
+          lancamentos.length
+            ? "As receitas e despesas estão com o mesmo valor."
+            : "Cadastre seus primeiros lançamentos.";
+        elementos.detalheSituacao.textContent =
+          lancamentos.length
+            ? "O negócio chegou ao ponto de equilíbrio."
+            : "O sistema mostrará quanto falta para recuperar os custos.";
+      }
+
+      elementos.barraProgresso.style.width = `${percentualRecuperado}%`;
+      elementos.legendaProgresso.textContent =
+        despesas > 0
+          ? `${percentualRecuperado.toFixed(1).replace(".", ",")}% dos custos recuperados`
+          : "Cadastre uma despesa para iniciar o acompanhamento";
+    }
+
+    function obterLancamentosFiltrados() {
+      const busca = elementos.filtroBusca.value.trim().toLowerCase();
+      const tipo = elementos.filtroTipo.value;
+      const mes = elementos.filtroMes.value;
+
+      return lancamentos
+        .filter(item => {
+          const correspondeBusca =
+            !busca ||
+            item.descricao.toLowerCase().includes(busca) ||
+            item.categoria.toLowerCase().includes(busca) ||
+            (item.observacao || "").toLowerCase().includes(busca);
+
+          const correspondeTipo =
+            tipo === "todos" || item.tipo === tipo;
+
+          const correspondeMes =
+            !mes || item.data.startsWith(mes);
+
+          return correspondeBusca && correspondeTipo && correspondeMes;
+        })
+        .sort((a, b) => {
+          if (a.data === b.data) {
+            return String(b.criadoEm || "").localeCompare(String(a.criadoEm || ""));
+          }
+          return b.data.localeCompare(a.data);
+        });
+    }
+
+    function renderizarTabela() {
+      const dados = obterLancamentosFiltrados();
+
+      elementos.tabela.innerHTML = dados
+        .map(item => {
+          const valorClasse = item.tipo === "receita" ? "positivo" : "negativo";
+          const tipoClasse =
+            item.tipo === "receita" ? "etiqueta-receita" : "etiqueta-despesa";
+          const tipoTexto = item.tipo === "receita" ? "Receita" : "Despesa";
+          const sinal = item.tipo === "receita" ? "+" : "-";
+
+          return `
+            <tr>
+              <td>${formatarData(item.data)}</td>
+              <td>
+                <strong>${escaparHtml(item.descricao)}</strong>
+                ${
+                  item.observacao
+                    ? `<div class="status">${escaparHtml(item.observacao)}</div>`
+                    : ""
+                }
+              </td>
+              <td>${escaparHtml(item.categoria)}</td>
+              <td>
+                <span class="etiqueta ${tipoClasse}">${tipoTexto}</span>
+              </td>
+              <td class="${valorClasse}">
+                <strong>${sinal} ${moeda(item.valor)}</strong>
+              </td>
+              <td>
+                <div class="acoes-tabela">
+                  <button
+                    class="botao-icone"
+                    type="button"
+                    data-acao="editar"
+                    data-id="${item.id}"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    class="botao-icone excluir"
+                    type="button"
+                    data-acao="excluir"
+                    data-id="${item.id}"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+
+      elementos.estadoVazio.style.display = dados.length ? "none" : "block";
+    }
+
+    function atualizarTela() {
+      atualizarResumo();
+      renderizarTabela();
+    }
+
+    elementos.form.addEventListener("submit", evento => {
+      evento.preventDefault();
+
+      const valor = Number(elementos.valor.value);
+
+      if (!Number.isFinite(valor) || valor <= 0) {
+        mostrarToast("Informe um valor maior que zero.");
+        elementos.valor.focus();
+        return;
+      }
+
+      const dados = {
+        id: elementos.id.value || gerarId(),
+        tipo: obterTipoSelecionado(),
+        data: elementos.data.value,
+        valor,
+        descricao: elementos.descricao.value.trim(),
+        categoria: elementos.categoria.value,
+        observacao: elementos.observacao.value.trim(),
+        criadoEm: new Date().toISOString()
+      };
+
+      if (!dados.data || !dados.descricao) {
+        mostrarToast("Preencha a data e a descrição.");
+        return;
+      }
+
+      const indiceEdicao = lancamentos.findIndex(item => item.id === dados.id);
+
+      if (indiceEdicao >= 0) {
+        dados.criadoEm = lancamentos[indiceEdicao].criadoEm || dados.criadoEm;
+        lancamentos[indiceEdicao] = dados;
+        mostrarToast("Lançamento atualizado.");
+      } else {
+        lancamentos.push(dados);
+        mostrarToast("Lançamento adicionado.");
+      }
+
+      salvarLancamentos();
+      limparFormulario();
+      atualizarTela();
+    });
+
+    elementos.tabela.addEventListener("click", evento => {
+      const botao = evento.target.closest("button[data-acao]");
+      if (!botao) return;
+
+      const id = botao.dataset.id;
+      const item = lancamentos.find(lancamento => lancamento.id === id);
+      if (!item) return;
+
+      if (botao.dataset.acao === "editar") {
+        elementos.id.value = item.id;
+        elementos.data.value = item.data;
+        elementos.valor.value = item.valor;
+        elementos.descricao.value = item.descricao;
+        elementos.categoria.value = item.categoria;
+        elementos.observacao.value = item.observacao || "";
+        selecionarTipo(item.tipo);
+
+        elementos.tituloFormulario.textContent = "Editar lançamento";
+        elementos.botaoSalvar.textContent = "Salvar alteração";
+        elementos.botaoCancelar.classList.remove("oculto");
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        elementos.descricao.focus();
+      }
+
+      if (botao.dataset.acao === "excluir") {
+        const confirmado = confirm(
+          `Deseja excluir o lançamento "${item.descricao}" no valor de ${moeda(item.valor)}?`
+        );
+
+        if (!confirmado) return;
+
+        lancamentos = lancamentos.filter(lancamento => lancamento.id !== id);
+        salvarLancamentos();
+        atualizarTela();
+        mostrarToast("Lançamento excluído.");
+      }
+    });
+
+    elementos.botaoCancelar.addEventListener("click", limparFormulario);
+
+    [
+      elementos.filtroBusca,
+      elementos.filtroTipo,
+      elementos.filtroMes
+    ].forEach(elemento => {
+      elemento.addEventListener("input", renderizarTabela);
+      elemento.addEventListener("change", renderizarTabela);
+    });
+
+    function baixarArquivo(conteudo, nome, tipoMime) {
+      const blob = new Blob([conteudo], { type: tipoMime });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nome;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    elementos.exportarJson.addEventListener("click", () => {
+      const backup = {
+        aplicativo: "Gestor Financeiro da Empresa",
+        versao: 1,
+        exportadoEm: new Date().toISOString(),
+        lancamentos
+      };
+
+      baixarArquivo(
+        JSON.stringify(backup, null, 2),
+        `backup-financeiro-${hojeIso()}.json`,
+        "application/json;charset=utf-8"
+      );
+
+      mostrarToast("Backup exportado.");
+    });
+
+    elementos.importarJson.addEventListener("click", () => {
+      elementos.arquivoImportacao.click();
+    });
+
+    elementos.arquivoImportacao.addEventListener("change", async evento => {
+      const arquivo = evento.target.files[0];
+      if (!arquivo) return;
+
+      try {
+        const texto = await arquivo.text();
+        const dados = JSON.parse(texto);
+        const importados = Array.isArray(dados) ? dados : dados.lancamentos;
+
+        if (!Array.isArray(importados)) {
+          throw new Error("Formato inválido");
+        }
+
+        const validos = importados.filter(item =>
+          item &&
+          item.id &&
+          ["receita", "despesa"].includes(item.tipo) &&
+          item.data &&
+          Number(item.valor) > 0 &&
+          item.descricao &&
+          item.categoria
+        );
+
+        if (!validos.length && importados.length) {
+          throw new Error("Nenhum lançamento válido");
+        }
+
+        const substituir = confirm(
+          "Clique em OK para substituir os dados atuais pelo backup. Clique em Cancelar para juntar o backup aos dados existentes."
+        );
+
+        if (substituir) {
+          lancamentos = validos;
+        } else {
+          const idsExistentes = new Set(lancamentos.map(item => item.id));
+          const novos = validos.filter(item => !idsExistentes.has(item.id));
+          lancamentos = [...lancamentos, ...novos];
+        }
+
+        salvarLancamentos();
+        limparFormulario();
+        atualizarTela();
+        mostrarToast("Backup importado com sucesso.");
+      } catch (erro) {
+        console.error(erro);
+        alert("Não foi possível importar esse arquivo. Verifique se ele é um backup válido.");
+      } finally {
+        evento.target.value = "";
+      }
+    });
+
+    elementos.exportarCsv.addEventListener("click", () => {
+      const cabecalho = [
+        "Data",
+        "Tipo",
+        "Descrição",
+        "Categoria",
+        "Observação",
+        "Valor"
+      ];
+
+      const linhas = lancamentos
+        .slice()
+        .sort((a, b) => a.data.localeCompare(b.data))
+        .map(item => [
+          formatarData(item.data),
+          item.tipo === "receita" ? "Receita" : "Despesa",
+          item.descricao,
+          item.categoria,
+          item.observacao || "",
+          Number(item.valor).toFixed(2).replace(".", ",")
+        ]);
+
+      const escaparCsv = valor => {
+        const texto = String(valor ?? "").replaceAll('"', '""');
+        return `"${texto}"`;
+      };
+
+      const csv = [cabecalho, ...linhas]
+        .map(linha => linha.map(escaparCsv).join(";"))
+        .join("\n");
+
+      baixarArquivo(
+        "\uFEFF" + csv,
+        `relatorio-financeiro-${hojeIso()}.csv`,
+        "text/csv;charset=utf-8"
+      );
+
+      mostrarToast("Relatório CSV exportado.");
+    });
+
+    elementos.apagarTudo.addEventListener("click", () => {
+      if (!lancamentos.length) {
+        mostrarToast("Não há dados para apagar.");
+        return;
+      }
+
+      const confirmado = confirm(
+        "Tem certeza de que deseja apagar todos os lançamentos? Exporte um backup antes, caso queira guardar os dados."
+      );
+
+      if (!confirmado) return;
+
+      lancamentos = [];
+      salvarLancamentos();
+      limparFormulario();
+      atualizarTela();
+      mostrarToast("Todos os dados foram apagados.");
+    });
+
+    atualizarTela();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Preencha estes dois valores depois de criar a tabela no Supabase.
+    // Use somente a Project URL e a Publishable key. Nunca use Secret ou service_role.
+    const SUPABASE_URL = "https://wkiyivukbyavpvvxehxn.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_7VPS0-_JRNcuPrzP7qIkKQ_JvaFVFvY";
+
+    const CHAVE_STORAGE_ANTIGA = "gestorFinanceiroEmpresa_v1";
+
+    const elementos = {
+      telaLogin: document.getElementById("telaLogin"),
+      aplicativo: document.getElementById("aplicativo"),
+      formLogin: document.getElementById("formLogin"),
+      emailLogin: document.getElementById("emailLogin"),
+      senhaLogin: document.getElementById("senhaLogin"),
+      botaoEntrar: document.getElementById("botaoEntrar"),
+      botaoCriarConta: document.getElementById("botaoCriarConta"),
+      mensagemLogin: document.getElementById("mensagemLogin"),
+      emailUsuario: document.getElementById("emailUsuario"),
+      botaoSair: document.getElementById("botaoSair"),
+      form: document.getElementById("formLancamento"),
+      id: document.getElementById("lancamentoId"),
+      data: document.getElementById("data"),
+      valor: document.getElementById("valor"),
+      descricao: document.getElementById("descricao"),
+      categoria: document.getElementById("categoria"),
+      observacao: document.getElementById("observacao"),
+      tituloFormulario: document.getElementById("tituloFormulario"),
+      botaoSalvar: document.getElementById("botaoSalvar"),
+      botaoCancelar: document.getElementById("botaoCancelarEdicao"),
+      tabela: document.getElementById("tabelaLancamentos"),
+      estadoVazio: document.getElementById("estadoVazio"),
+      totalReceitas: document.getElementById("totalReceitas"),
+      totalDespesas: document.getElementById("totalDespesas"),
+      saldoAtual: document.getElementById("saldoAtual"),
+      textoSaldo: document.getElementById("textoSaldo"),
+      situacaoNegocio: document.getElementById("situacaoNegocio"),
+      detalheSituacao: document.getElementById("detalheSituacao"),
+      barraProgresso: document.getElementById("barraProgresso"),
+      legendaProgresso: document.getElementById("legendaProgresso"),
+      filtroBusca: document.getElementById("filtroBusca"),
+      filtroTipo: document.getElementById("filtroTipo"),
+      filtroMes: document.getElementById("filtroMes"),
+      exportarCsv: document.getElementById("exportarCsv"),
+      exportarJson: document.getElementById("exportarJson"),
+      importarJson: document.getElementById("importarJson"),
+      arquivoImportacao: document.getElementById("arquivoImportacao"),
+      apagarTudo: document.getElementById("apagarTudo"),
+      toast: document.getElementById("toast")
+    };
+
+    let lancamentos = [];
+    let usuarioAtual = null;
+    let usuarioCarregadoId = null;
+
+    function configuracaoPreenchida() {
+      return (
+        SUPABASE_URL.startsWith("https://") &&
+        SUPABASE_URL.includes(".supabase.co") &&
+        !SUPABASE_PUBLISHABLE_KEY.startsWith("COLE_AQUI")
+      );
+    }
+
+    const supabaseClient = configuracaoPreenchida()
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+      : null;
+
+    function hojeIso() {
+      const hoje = new Date();
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+      const dia = String(hoje.getDate()).padStart(2, "0");
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    function moeda(valor) {
+      return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      }).format(Number(valor) || 0);
+    }
+
+    function formatarData(dataIso) {
+      if (!dataIso) return "";
+      const [ano, mes, dia] = dataIso.split("-");
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    function escaparHtml(texto) {
+      return String(texto ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function gerarId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function obterTipoSelecionado() {
+      return document.querySelector('input[name="tipo"]:checked').value;
+    }
+
+    function selecionarTipo(tipo) {
+      const radio = document.querySelector(`input[name="tipo"][value="${tipo}"]`);
+      if (radio) radio.checked = true;
+    }
+
+    function mostrarToast(mensagem) {
+      elementos.toast.textContent = mensagem;
+      elementos.toast.classList.add("mostrar");
+      clearTimeout(mostrarToast.timer);
+      mostrarToast.timer = setTimeout(() => {
+        elementos.toast.classList.remove("mostrar");
+      }, 3000);
+    }
+
+    function mostrarMensagemLogin(mensagem, erro = false) {
+      elementos.mensagemLogin.textContent = mensagem;
+      elementos.mensagemLogin.classList.toggle("erro", erro);
+    }
+
+    function definirLoginOcupado(ocupado) {
+      elementos.botaoEntrar.disabled = ocupado;
+      elementos.botaoCriarConta.disabled = ocupado;
+      elementos.emailLogin.disabled = ocupado;
+      elementos.senhaLogin.disabled = ocupado;
+    }
+
+    function limparFormulario() {
+      elementos.form.reset();
+      elementos.id.value = "";
+      elementos.data.value = hojeIso();
+      selecionarTipo("despesa");
+      elementos.tituloFormulario.textContent = "Novo lançamento";
+      elementos.botaoSalvar.textContent = "Adicionar lançamento";
+      elementos.botaoCancelar.classList.add("oculto");
+    }
+
+    function atualizarResumo() {
+      const receitas = lancamentos
+        .filter(item => item.tipo === "receita")
+        .reduce((total, item) => total + Number(item.valor), 0);
+      const despesas = lancamentos
+        .filter(item => item.tipo === "despesa")
+        .reduce((total, item) => total + Number(item.valor), 0);
+      const saldo = receitas - despesas;
+      const percentualRecuperado =
+        despesas > 0 ? Math.min((receitas / despesas) * 100, 100) : 0;
+
+      elementos.totalReceitas.textContent = moeda(receitas);
+      elementos.totalDespesas.textContent = moeda(despesas);
+      elementos.saldoAtual.textContent = moeda(saldo);
+      elementos.saldoAtual.classList.remove("positivo", "negativo", "neutro");
+
+      if (saldo > 0) {
+        elementos.saldoAtual.classList.add("positivo");
+        elementos.situacaoNegocio.textContent = "Saldo positivo";
+        elementos.situacaoNegocio.className = "valor-resumo positivo";
+        elementos.textoSaldo.textContent = `A empresa já superou os custos em ${moeda(saldo)}.`;
+        elementos.detalheSituacao.textContent =
+          "As receitas acumuladas já são maiores que as despesas.";
+      } else if (saldo < 0) {
+        elementos.saldoAtual.classList.add("negativo");
+        elementos.situacaoNegocio.textContent = "Recuperando custos";
+        elementos.situacaoNegocio.className = "valor-resumo negativo";
+        elementos.textoSaldo.textContent =
+          `Faltam ${moeda(Math.abs(saldo))} para o saldo chegar a zero.`;
+        elementos.detalheSituacao.textContent =
+          "Continue registrando as vendas para acompanhar a recuperação do investimento.";
+      } else {
+        elementos.saldoAtual.classList.add("neutro");
+        elementos.situacaoNegocio.textContent =
+          lancamentos.length ? "Ponto de equilíbrio" : "Iniciando";
+        elementos.situacaoNegocio.className = "valor-resumo neutro";
+        elementos.textoSaldo.textContent = lancamentos.length
+          ? "As receitas e despesas estão com o mesmo valor."
+          : "Cadastre seus primeiros lançamentos.";
+        elementos.detalheSituacao.textContent = lancamentos.length
+          ? "O negócio chegou ao ponto de equilíbrio."
+          : "O sistema mostrará quanto falta para recuperar os custos.";
+      }
+
+      elementos.barraProgresso.style.width = `${percentualRecuperado}%`;
+      elementos.legendaProgresso.textContent = despesas > 0
+        ? `${percentualRecuperado.toFixed(1).replace(".", ",")}% dos custos recuperados`
+        : "Cadastre uma despesa para iniciar o acompanhamento";
+    }
+
+    function obterLancamentosFiltrados() {
+      const busca = elementos.filtroBusca.value.trim().toLowerCase();
+      const tipo = elementos.filtroTipo.value;
+      const mes = elementos.filtroMes.value;
+
+      return lancamentos
+        .filter(item => {
+          const correspondeBusca =
+            !busca ||
+            item.descricao.toLowerCase().includes(busca) ||
+            item.categoria.toLowerCase().includes(busca) ||
+            (item.observacao || "").toLowerCase().includes(busca);
+          const correspondeTipo = tipo === "todos" || item.tipo === tipo;
+          const correspondeMes = !mes || item.data.startsWith(mes);
+          return correspondeBusca && correspondeTipo && correspondeMes;
+        })
+        .sort((a, b) => {
+          if (a.data === b.data) {
+            return String(b.criadoEm || "").localeCompare(String(a.criadoEm || ""));
+          }
+          return b.data.localeCompare(a.data);
+        });
+    }
+
+    function renderizarTabela() {
+      const dados = obterLancamentosFiltrados();
+      elementos.tabela.innerHTML = dados.map(item => {
+        const valorClasse = item.tipo === "receita" ? "positivo" : "negativo";
+        const tipoClasse =
+          item.tipo === "receita" ? "etiqueta-receita" : "etiqueta-despesa";
+        const tipoTexto = item.tipo === "receita" ? "Receita" : "Despesa";
+        const sinal = item.tipo === "receita" ? "+" : "-";
+
+        return `
+          <tr>
+            <td>${formatarData(item.data)}</td>
+            <td>
+              <strong>${escaparHtml(item.descricao)}</strong>
+              ${item.observacao
+                ? `<div class="status">${escaparHtml(item.observacao)}</div>`
+                : ""}
+            </td>
+            <td>${escaparHtml(item.categoria)}</td>
+            <td><span class="etiqueta ${tipoClasse}">${tipoTexto}</span></td>
+            <td class="${valorClasse}"><strong>${sinal} ${moeda(item.valor)}</strong></td>
+            <td>
+              <div class="acoes-tabela">
+                <button class="botao-icone" type="button" data-acao="editar" data-id="${escaparHtml(item.id)}">Editar</button>
+                <button class="botao-icone excluir" type="button" data-acao="excluir" data-id="${escaparHtml(item.id)}">Excluir</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join("");
+      elementos.estadoVazio.style.display = dados.length ? "none" : "block";
+    }
+
+    function atualizarTela() {
+      atualizarResumo();
+      renderizarTabela();
+    }
+
+    function linhaParaLancamento(linha) {
+      return {
+        id: linha.id,
+        tipo: linha.tipo,
+        data: linha.data,
+        valor: Number(linha.valor),
+        descricao: linha.descricao,
+        categoria: linha.categoria,
+        observacao: linha.observacao || "",
+        criadoEm: linha.criado_em
+      };
+    }
+
+    function lancamentoParaLinha(item) {
+      return {
+        id: String(item.id || gerarId()),
+        user_id: usuarioAtual.id,
+        tipo: item.tipo,
+        data: item.data,
+        valor: Number(item.valor),
+        descricao: String(item.descricao || "").trim(),
+        categoria: String(item.categoria || "Outros").trim(),
+        observacao: String(item.observacao || "").trim() || null,
+        criado_em: item.criadoEm || new Date().toISOString()
+      };
+    }
+
+    async function carregarLancamentos() {
+      const { data, error } = await supabaseClient
+        .from("lancamentos")
+        .select("id,tipo,data,valor,descricao,categoria,observacao,criado_em")
+        .order("data", { ascending: false })
+        .order("criado_em", { ascending: false });
+
+      if (error) throw error;
+      lancamentos = (data || []).map(linhaParaLancamento);
+      atualizarTela();
+    }
+
+    async function oferecerMigracaoLocal() {
+      if (lancamentos.length || !usuarioAtual) return;
+
+      const marcador = `gestorFinanceiroMigrado_${usuarioAtual.id}`;
+      if (localStorage.getItem(marcador)) return;
+
+      let locais = [];
+      try {
+        const salvo = localStorage.getItem(CHAVE_STORAGE_ANTIGA);
+        const dados = salvo ? JSON.parse(salvo) : [];
+        locais = Array.isArray(dados) ? dados : [];
+      } catch (erro) {
+        console.error("Não foi possível ler os dados antigos:", erro);
+      }
+
+      if (!locais.length) {
+        localStorage.setItem(marcador, "sem-dados");
+        return;
+      }
+
+      const importar = confirm(
+        `Encontramos ${locais.length} lançamento(s) salvo(s) neste navegador. Deseja enviá-los para o Supabase agora?`
+      );
+
+      if (!importar) {
+        localStorage.setItem(marcador, "ignorado");
+        return;
+      }
+
+      const linhas = locais.map(lancamentoParaLinha);
+      const { error } = await supabaseClient.from("lancamentos").insert(linhas);
+      if (error) throw error;
+      localStorage.setItem(marcador, "migrado");
+      await carregarLancamentos();
+      mostrarToast("Dados antigos enviados para o Supabase.");
+    }
+
+    async function tratarSessao(session) {
+      if (!session?.user) {
+        usuarioAtual = null;
+        usuarioCarregadoId = null;
+        lancamentos = [];
+        elementos.aplicativo.classList.add("oculto");
+        elementos.telaLogin.classList.remove("oculto");
+        atualizarTela();
+        return;
+      }
+
+      usuarioAtual = session.user;
+      elementos.emailUsuario.textContent = `Conectado como ${usuarioAtual.email}`;
+      elementos.telaLogin.classList.add("oculto");
+      elementos.aplicativo.classList.remove("oculto");
+
+      if (usuarioCarregadoId === usuarioAtual.id) return;
+      usuarioCarregadoId = usuarioAtual.id;
+
+      try {
+        await carregarLancamentos();
+        await oferecerMigracaoLocal();
+      } catch (erro) {
+        console.error(erro);
+        usuarioCarregadoId = null;
+        mostrarToast("Não foi possível carregar os dados. Confira a tabela e as regras do Supabase.");
+      }
+    }
+
+    elementos.formLogin.addEventListener("submit", async evento => {
+      evento.preventDefault();
+      if (!supabaseClient) {
+        mostrarMensagemLogin("Preencha a Project URL e a Publishable key no arquivo HTML.", true);
+        return;
+      }
+
+      definirLoginOcupado(true);
+      mostrarMensagemLogin("Entrando...");
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email: elementos.emailLogin.value.trim(),
+        password: elementos.senhaLogin.value
+      });
+      definirLoginOcupado(false);
+
+      if (error) {
+        mostrarMensagemLogin("Não foi possível entrar. Confira o e-mail e a senha.", true);
+      } else {
+        elementos.senhaLogin.value = "";
+        mostrarMensagemLogin("");
+      }
+    });
+
+    elementos.botaoCriarConta.addEventListener("click", async () => {
+      if (!elementos.formLogin.reportValidity()) return;
+      if (!supabaseClient) {
+        mostrarMensagemLogin("Preencha a Project URL e a Publishable key no arquivo HTML.", true);
+        return;
+      }
+
+      definirLoginOcupado(true);
+      mostrarMensagemLogin("Criando sua conta...");
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: elementos.emailLogin.value.trim(),
+        password: elementos.senhaLogin.value
+      });
+      definirLoginOcupado(false);
+
+      if (error) {
+        mostrarMensagemLogin(error.message || "Não foi possível criar a conta.", true);
+      } else if (data.session) {
+        elementos.senhaLogin.value = "";
+        mostrarMensagemLogin("");
+      } else {
+        elementos.senhaLogin.value = "";
+        mostrarMensagemLogin("Conta criada. Verifique seu e-mail para confirmar o cadastro.");
+      }
+    });
+
+    elementos.botaoSair.addEventListener("click", async () => {
+      if (!supabaseClient) return;
+      await supabaseClient.auth.signOut();
+      mostrarMensagemLogin("Você saiu da sua conta.");
+    });
+
+    elementos.form.addEventListener("submit", async evento => {
+      evento.preventDefault();
+      if (!usuarioAtual) return;
+
+      const valor = Number(elementos.valor.value);
+      if (!Number.isFinite(valor) || valor <= 0) {
+        mostrarToast("Informe um valor maior que zero.");
+        elementos.valor.focus();
+        return;
+      }
+
+      const id = elementos.id.value || gerarId();
+      const existente = lancamentos.find(item => item.id === id);
+      const item = {
+        id,
+        tipo: obterTipoSelecionado(),
+        data: elementos.data.value,
+        valor,
+        descricao: elementos.descricao.value.trim(),
+        categoria: elementos.categoria.value,
+        observacao: elementos.observacao.value.trim(),
+        criadoEm: existente?.criadoEm || new Date().toISOString()
+      };
+
+      if (!item.data || !item.descricao) {
+        mostrarToast("Preencha a data e a descrição.");
+        return;
+      }
+
+      elementos.botaoSalvar.disabled = true;
+      const linha = lancamentoParaLinha(item);
+      const operacao = existente
+        ? supabaseClient.from("lancamentos").update({
+            tipo: linha.tipo,
+            data: linha.data,
+            valor: linha.valor,
+            descricao: linha.descricao,
+            categoria: linha.categoria,
+            observacao: linha.observacao
+          }).eq("id", id)
+        : supabaseClient.from("lancamentos").insert(linha);
+
+      const { error } = await operacao;
+      elementos.botaoSalvar.disabled = false;
+
+      if (error) {
+        console.error(error);
+        mostrarToast("Não foi possível salvar. Tente novamente.");
+        return;
+      }
+
+      limparFormulario();
+      await carregarLancamentos();
+      mostrarToast(existente ? "Lançamento atualizado." : "Lançamento adicionado.");
+    });
+
+    elementos.tabela.addEventListener("click", async evento => {
+      const botao = evento.target.closest("button[data-acao]");
+      if (!botao) return;
+      const id = botao.dataset.id;
+      const item = lancamentos.find(lancamento => lancamento.id === id);
+      if (!item) return;
+
+      if (botao.dataset.acao === "editar") {
+        elementos.id.value = item.id;
+        elementos.data.value = item.data;
+        elementos.valor.value = item.valor;
+        elementos.descricao.value = item.descricao;
+        elementos.categoria.value = item.categoria;
+        elementos.observacao.value = item.observacao || "";
+        selecionarTipo(item.tipo);
+        elementos.tituloFormulario.textContent = "Editar lançamento";
+        elementos.botaoSalvar.textContent = "Salvar alteração";
+        elementos.botaoCancelar.classList.remove("oculto");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        elementos.descricao.focus();
+      }
+
+      if (botao.dataset.acao === "excluir") {
+        const confirmado = confirm(
+          `Deseja excluir o lançamento "${item.descricao}" no valor de ${moeda(item.valor)}?`
+        );
+        if (!confirmado) return;
+
+        botao.disabled = true;
+        const { error } = await supabaseClient.from("lancamentos").delete().eq("id", id);
+        if (error) {
+          console.error(error);
+          botao.disabled = false;
+          mostrarToast("Não foi possível excluir.");
+          return;
+        }
+        await carregarLancamentos();
+        mostrarToast("Lançamento excluído.");
+      }
+    });
+
+    elementos.botaoCancelar.addEventListener("click", limparFormulario);
+
+    [elementos.filtroBusca, elementos.filtroTipo, elementos.filtroMes].forEach(elemento => {
+      elemento.addEventListener("input", renderizarTabela);
+      elemento.addEventListener("change", renderizarTabela);
+    });
+
+    function baixarArquivo(conteudo, nome, tipoMime) {
+      const blob = new Blob([conteudo], { type: tipoMime });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nome;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    elementos.exportarJson.addEventListener("click", () => {
+      const backup = {
+        aplicativo: "Gestor Financeiro da Empresa",
+        versao: 2,
+        exportadoEm: new Date().toISOString(),
+        lancamentos
+      };
+      baixarArquivo(
+        JSON.stringify(backup, null, 2),
+        `backup-financeiro-${hojeIso()}.json`,
+        "application/json;charset=utf-8"
+      );
+      mostrarToast("Backup exportado.");
+    });
+
+    elementos.importarJson.addEventListener("click", () => elementos.arquivoImportacao.click());
+
+    elementos.arquivoImportacao.addEventListener("change", async evento => {
+      const arquivo = evento.target.files[0];
+      if (!arquivo || !usuarioAtual) return;
+
+      try {
+        const texto = await arquivo.text();
+        const dados = JSON.parse(texto);
+        const importados = Array.isArray(dados) ? dados : dados.lancamentos;
+        if (!Array.isArray(importados)) throw new Error("Formato inválido");
+
+        const validos = importados.filter(item =>
+          item &&
+          ["receita", "despesa"].includes(item.tipo) &&
+          item.data &&
+          Number(item.valor) > 0 &&
+          item.descricao &&
+          item.categoria
+        ).map(item => ({ ...item, id: String(item.id || gerarId()) }));
+
+        if (!validos.length && importados.length) {
+          throw new Error("Nenhum lançamento válido");
+        }
+
+        const substituir = confirm(
+          "Clique em OK para substituir os dados atuais pelo backup. Clique em Cancelar para juntar o backup aos dados existentes."
+        );
+
+        if (substituir) {
+          const { error: erroExclusao } = await supabaseClient
+            .from("lancamentos")
+            .delete()
+            .eq("user_id", usuarioAtual.id);
+          if (erroExclusao) throw erroExclusao;
+        }
+
+        const idsExistentes = new Set(substituir ? [] : lancamentos.map(item => item.id));
+        const novos = validos.filter(item => !idsExistentes.has(item.id));
+        if (novos.length) {
+          const { error: erroImportacao } = await supabaseClient
+            .from("lancamentos")
+            .insert(novos.map(lancamentoParaLinha));
+          if (erroImportacao) throw erroImportacao;
+        }
+
+        await carregarLancamentos();
+        limparFormulario();
+        mostrarToast("Backup importado com sucesso.");
+      } catch (erro) {
+        console.error(erro);
+        alert("Não foi possível importar esse arquivo. Verifique se ele é um backup válido.");
+      } finally {
+        evento.target.value = "";
+      }
+    });
+
+    elementos.exportarCsv.addEventListener("click", () => {
+      const cabecalho = ["Data", "Tipo", "Descrição", "Categoria", "Observação", "Valor"];
+      const linhas = lancamentos
+        .slice()
+        .sort((a, b) => a.data.localeCompare(b.data))
+        .map(item => [
+          formatarData(item.data),
+          item.tipo === "receita" ? "Receita" : "Despesa",
+          item.descricao,
+          item.categoria,
+          item.observacao || "",
+          Number(item.valor).toFixed(2).replace(".", ",")
+        ]);
+      const escaparCsv = valor => `"${String(valor ?? "").replaceAll('"', '""')}"`;
+      const csv = [cabecalho, ...linhas]
+        .map(linha => linha.map(escaparCsv).join(";"))
+        .join("\n");
+      baixarArquivo(
+        "\uFEFF" + csv,
+        `relatorio-financeiro-${hojeIso()}.csv`,
+        "text/csv;charset=utf-8"
+      );
+      mostrarToast("Relatório CSV exportado.");
+    });
+
+    elementos.apagarTudo.addEventListener("click", async () => {
+      if (!lancamentos.length || !usuarioAtual) {
+        mostrarToast("Não há dados para apagar.");
+        return;
+      }
+      const confirmado = confirm(
+        "Tem certeza de que deseja apagar todos os lançamentos? Exporte um backup antes, caso queira guardar os dados."
+      );
+      if (!confirmado) return;
+
+      elementos.apagarTudo.disabled = true;
+      const { error } = await supabaseClient
+        .from("lancamentos")
+        .delete()
+        .eq("user_id", usuarioAtual.id);
+      elementos.apagarTudo.disabled = false;
+
+      if (error) {
+        console.error(error);
+        mostrarToast("Não foi possível apagar os dados.");
+        return;
+      }
+      lancamentos = [];
+      limparFormulario();
+      atualizarTela();
+      mostrarToast("Todos os dados foram apagados.");
+    });
+
+    async function inicializar() {
+      elementos.data.value = hojeIso();
+      atualizarTela();
+
+      if (!supabaseClient) {
+        mostrarMensagemLogin(
+          "Configuração pendente: ainda falta colocar a Project URL e a Publishable key neste arquivo.",
+          true
+        );
+        return;
+      }
+
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) {
+        mostrarMensagemLogin("Não foi possível verificar a sessão.", true);
+      } else {
+        await tratarSessao(data.session);
+      }
+
+      supabaseClient.auth.onAuthStateChange((evento, session) => {
+        setTimeout(() => tratarSessao(session), 0);
+      });
+    }
+
+    inicializar();
+  </script>
+</body>
+</html>
