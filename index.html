@@ -475,6 +475,22 @@
       margin-top: 8px;
     }
 
+    .botao-link {
+      display: block;
+      margin: 14px auto 0;
+      padding: 4px;
+      border: 0;
+      background: transparent;
+      color: var(--primaria);
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .botao-link:hover {
+      color: var(--primaria-escura);
+    }
+
     .mensagem-login {
       min-height: 20px;
       margin: 14px 0 0;
@@ -629,7 +645,48 @@
           <button class="botao-secundario" id="botaoCriarConta" type="button">Criar conta</button>
         </div>
 
+        <button class="botao-link" id="botaoEsqueciSenha" type="button">
+          Esqueci minha senha
+        </button>
+
         <p id="mensagemLogin" class="mensagem-login"></p>
+      </form>
+    </div>
+  </section>
+
+  <section id="telaRedefinirSenha" class="tela-login oculto">
+    <div class="cartao login-cartao">
+      <h1>Criar nova senha</h1>
+      <p>Digite e confirme a nova senha da sua conta.</p>
+
+      <form id="formRedefinirSenha">
+        <div class="campo">
+          <label for="novaSenha">Nova senha</label>
+          <input
+            id="novaSenha"
+            type="password"
+            minlength="6"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <div class="campo">
+          <label for="confirmarNovaSenha">Confirmar nova senha</label>
+          <input
+            id="confirmarNovaSenha"
+            type="password"
+            minlength="6"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <button class="botao-principal" id="botaoSalvarNovaSenha" type="submit">
+          Salvar nova senha
+        </button>
+
+        <p id="mensagemRedefinicao" class="mensagem-login"></p>
       </form>
     </div>
   </section>
@@ -1380,7 +1437,14 @@
       senhaLogin: document.getElementById("senhaLogin"),
       botaoEntrar: document.getElementById("botaoEntrar"),
       botaoCriarConta: document.getElementById("botaoCriarConta"),
+      botaoEsqueciSenha: document.getElementById("botaoEsqueciSenha"),
       mensagemLogin: document.getElementById("mensagemLogin"),
+      telaRedefinirSenha: document.getElementById("telaRedefinirSenha"),
+      formRedefinirSenha: document.getElementById("formRedefinirSenha"),
+      novaSenha: document.getElementById("novaSenha"),
+      confirmarNovaSenha: document.getElementById("confirmarNovaSenha"),
+      botaoSalvarNovaSenha: document.getElementById("botaoSalvarNovaSenha"),
+      mensagemRedefinicao: document.getElementById("mensagemRedefinicao"),
       emailUsuario: document.getElementById("emailUsuario"),
       botaoSair: document.getElementById("botaoSair"),
       form: document.getElementById("formLancamento"),
@@ -1488,9 +1552,28 @@
       elementos.mensagemLogin.classList.toggle("erro", erro);
     }
 
+    function mostrarMensagemRedefinicao(mensagem, erro = false) {
+      elementos.mensagemRedefinicao.textContent = mensagem;
+      elementos.mensagemRedefinicao.classList.toggle("erro", erro);
+    }
+
+    function mostrarTelaRedefinirSenha() {
+      elementos.telaLogin.classList.add("oculto");
+      elementos.aplicativo.classList.add("oculto");
+      elementos.telaRedefinirSenha.classList.remove("oculto");
+      elementos.novaSenha.focus();
+    }
+
+    function mostrarTelaLogin() {
+      elementos.telaRedefinirSenha.classList.add("oculto");
+      elementos.aplicativo.classList.add("oculto");
+      elementos.telaLogin.classList.remove("oculto");
+    }
+
     function definirLoginOcupado(ocupado) {
       elementos.botaoEntrar.disabled = ocupado;
       elementos.botaoCriarConta.disabled = ocupado;
+      elementos.botaoEsqueciSenha.disabled = ocupado;
       elementos.emailLogin.disabled = ocupado;
       elementos.senhaLogin.disabled = ocupado;
     }
@@ -1698,6 +1781,7 @@
         usuarioCarregadoId = null;
         lancamentos = [];
         elementos.aplicativo.classList.add("oculto");
+        elementos.telaRedefinirSenha.classList.add("oculto");
         elementos.telaLogin.classList.remove("oculto");
         atualizarTela();
         return;
@@ -1706,6 +1790,7 @@
       usuarioAtual = session.user;
       elementos.emailUsuario.textContent = `Conectado como ${usuarioAtual.email}`;
       elementos.telaLogin.classList.add("oculto");
+      elementos.telaRedefinirSenha.classList.add("oculto");
       elementos.aplicativo.classList.remove("oculto");
 
       if (usuarioCarregadoId === usuarioAtual.id) return;
@@ -1768,6 +1853,91 @@
         elementos.senhaLogin.value = "";
         mostrarMensagemLogin("Conta criada. Verifique seu e-mail para confirmar o cadastro.");
       }
+    });
+
+    elementos.botaoEsqueciSenha.addEventListener("click", async () => {
+      const email = elementos.emailLogin.value.trim();
+
+      if (!email || !elementos.emailLogin.checkValidity()) {
+        mostrarMensagemLogin("Digite um e-mail válido para recuperar a senha.", true);
+        elementos.emailLogin.focus();
+        elementos.emailLogin.reportValidity();
+        return;
+      }
+
+      if (!supabaseClient) {
+        mostrarMensagemLogin("A conexão com o Supabase ainda não foi configurada.", true);
+        return;
+      }
+
+      definirLoginOcupado(true);
+      mostrarMensagemLogin("Enviando o e-mail de recuperação...");
+
+      const enderecoRetorno = new URL(window.location.href);
+      enderecoRetorno.search = "";
+      enderecoRetorno.hash = "";
+
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: enderecoRetorno.toString()
+      });
+
+      definirLoginOcupado(false);
+
+      if (error) {
+        const limiteAtingido =
+          error.status === 429 || /rate limit|too many requests/i.test(error.message || "");
+        mostrarMensagemLogin(
+          limiteAtingido
+            ? "Limite de e-mails atingido. Aguarde aproximadamente uma hora e tente novamente."
+            : "Não foi possível enviar o e-mail de recuperação. Tente novamente.",
+          true
+        );
+        return;
+      }
+
+      mostrarMensagemLogin(
+        "Se esse e-mail estiver cadastrado, você receberá um link para criar uma nova senha."
+      );
+    });
+
+    elementos.formRedefinirSenha.addEventListener("submit", async evento => {
+      evento.preventDefault();
+
+      const novaSenha = elementos.novaSenha.value;
+      const confirmarSenha = elementos.confirmarNovaSenha.value;
+
+      if (novaSenha.length < 6) {
+        mostrarMensagemRedefinicao("A senha precisa ter pelo menos 6 caracteres.", true);
+        elementos.novaSenha.focus();
+        return;
+      }
+
+      if (novaSenha !== confirmarSenha) {
+        mostrarMensagemRedefinicao("As duas senhas precisam ser iguais.", true);
+        elementos.confirmarNovaSenha.focus();
+        return;
+      }
+
+      elementos.botaoSalvarNovaSenha.disabled = true;
+      mostrarMensagemRedefinicao("Salvando a nova senha...");
+
+      const { error } = await supabaseClient.auth.updateUser({ password: novaSenha });
+
+      if (error) {
+        elementos.botaoSalvarNovaSenha.disabled = false;
+        mostrarMensagemRedefinicao(
+          "Não foi possível alterar a senha. Solicite um novo link de recuperação.",
+          true
+        );
+        return;
+      }
+
+      elementos.formRedefinirSenha.reset();
+      elementos.botaoSalvarNovaSenha.disabled = false;
+      await supabaseClient.auth.signOut();
+      mostrarTelaLogin();
+      mostrarMensagemLogin("Senha alterada com sucesso. Entre usando a nova senha.");
+      history.replaceState({}, document.title, window.location.pathname);
     });
 
     elementos.botaoSair.addEventListener("click", async () => {
@@ -2029,16 +2199,22 @@
         return;
       }
 
+      supabaseClient.auth.onAuthStateChange((evento, session) => {
+        setTimeout(() => {
+          if (evento === "PASSWORD_RECOVERY") {
+            mostrarTelaRedefinirSenha();
+            return;
+          }
+          tratarSessao(session);
+        }, 0);
+      });
+
       const { data, error } = await supabaseClient.auth.getSession();
       if (error) {
         mostrarMensagemLogin("Não foi possível verificar a sessão.", true);
       } else {
         await tratarSessao(data.session);
       }
-
-      supabaseClient.auth.onAuthStateChange((evento, session) => {
-        setTimeout(() => tratarSessao(session), 0);
-      });
     }
 
     inicializar();
