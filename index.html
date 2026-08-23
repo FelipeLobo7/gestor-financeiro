@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Gestor financeiro e precificador Amazon para pequenas empresas." />
+  <meta name="description" content="Gestor financeiro, precificador Amazon e cadastro de fornecedores para pequenas empresas." />
   <title>Gestor do E-commerce</title>
   <link rel="stylesheet" href="precificador.css?v=2" />
+  <link rel="stylesheet" href="fornecedores.css?v=1" />
 
   <script>
     try {
@@ -710,8 +711,8 @@
     <div class="topo-conteudo">
       <h1>Gestor do E-commerce</h1>
       <p>
-        Controle as finanças da empresa e calcule preços de venda com todos os custos
-        da operação na Amazon.
+        Controle as finanças, calcule preços de venda e organize seus fornecedores
+        em um só lugar.
       </p>
       <div class="conta-barra">
         <span id="emailUsuario" class="conta-email"></span>
@@ -729,6 +730,10 @@
       <button class="modulo-botao" type="button" data-modulo="precificador">
         <span aria-hidden="true">R$</span>
         Precificador Amazon
+      </button>
+      <button class="modulo-botao" type="button" data-modulo="fornecedores">
+        <span aria-hidden="true">▣</span>
+        Fornecedores
       </button>
     </nav>
 
@@ -1264,6 +1269,162 @@
         <strong>Importante:</strong> esta ferramenta produz estimativas com os valores informados e as tabelas públicas indicadas.
         Tarifas promocionais, impostos e cobranças específicas da conta devem ser confirmados na Seller Central e com a contabilidade antes de publicar o preço.
       </aside>
+    </section>
+
+    <section id="moduloFornecedores" class="fornecedores-modulo oculto" aria-labelledby="tituloFornecedores">
+      <header class="fornecedores-cabecalho cartao">
+        <div>
+          <span class="fornecedores-selo">BASE DE PARCEIROS</span>
+          <h2 id="tituloFornecedores">Meus fornecedores</h2>
+          <p>Centralize contatos, condições de compra e os produtos de cada fornecedor.</p>
+        </div>
+        <button id="botaoNovoFornecedorTopo" class="botao-principal fornecedor-novo-topo" type="button">
+          + Novo fornecedor
+        </button>
+      </header>
+
+      <section class="fornecedores-resumo" aria-label="Resumo dos fornecedores">
+        <article class="cartao fornecedor-resumo-card">
+          <span>Fornecedores ativos</span>
+          <strong id="totalFornecedoresAtivos">0</strong>
+        </article>
+        <article class="cartao fornecedor-resumo-card">
+          <span>Preferenciais</span>
+          <strong id="totalFornecedoresPreferenciais">0</strong>
+        </article>
+        <article class="cartao fornecedor-resumo-card">
+          <span>Em avaliação</span>
+          <strong id="totalFornecedoresTeste">0</strong>
+        </article>
+      </section>
+
+      <div class="fornecedores-grade">
+        <form id="formFornecedor" class="cartao fornecedor-formulario">
+          <input id="fornecedorId" type="hidden" />
+          <div class="fornecedor-formulario-topo">
+            <div>
+              <h3 id="tituloFormFornecedor">Novo fornecedor</h3>
+              <p>Cadastre somente os dados úteis para decidir e fazer novas compras.</p>
+            </div>
+          </div>
+
+          <div class="fornecedor-campos fornecedor-duas-colunas">
+            <div class="fornecedor-campo fornecedor-coluna-inteira">
+              <label for="fornecedorNome">Nome do fornecedor</label>
+              <input id="fornecedorNome" type="text" maxlength="120" placeholder="Ex.: Distribuidora Casa & Cia" required />
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorStatus">Situação</label>
+              <select id="fornecedorStatus">
+                <option value="ativo">Ativo</option>
+                <option value="teste">Em avaliação</option>
+                <option value="pausado">Pausado</option>
+              </select>
+            </div>
+            <label class="fornecedor-preferencial">
+              <input id="fornecedorPreferencial" type="checkbox" />
+              <span><strong>Fornecedor preferencial</strong><small>Marque os parceiros que deseja priorizar.</small></span>
+            </label>
+            <div class="fornecedor-campo">
+              <label for="fornecedorContato">Pessoa de contato</label>
+              <input id="fornecedorContato" type="text" maxlength="100" placeholder="Nome do vendedor ou atendente" />
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorWhatsapp">WhatsApp ou telefone</label>
+              <input id="fornecedorWhatsapp" type="tel" maxlength="30" placeholder="(12) 99999-9999" />
+            </div>
+            <div class="fornecedor-campo fornecedor-coluna-inteira">
+              <label for="fornecedorSite">Site, catálogo ou link da loja</label>
+              <input id="fornecedorSite" type="text" maxlength="300" placeholder="https://..." />
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorCidade">Cidade</label>
+              <input id="fornecedorCidade" type="text" maxlength="80" placeholder="Ex.: São Paulo" />
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorEstado">Estado</label>
+              <select id="fornecedorEstado">
+                <option value="">Selecione</option>
+                <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option>
+                <option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option>
+                <option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option>
+                <option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option>
+                <option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                <option value="SP" selected>SP</option><option value="SE">SE</option><option value="TO">TO</option>
+              </select>
+            </div>
+            <div class="fornecedor-campo fornecedor-coluna-inteira">
+              <label for="fornecedorProdutos">O que você compra deste fornecedor?</label>
+              <textarea id="fornecedorProdutos" maxlength="500" rows="3" placeholder="Ex.: utilidades domésticas, garrafas e potes organizadores"></textarea>
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorPedidoMinimo">Pedido mínimo</label>
+              <div class="fornecedor-input-dinheiro"><span>R$</span><input id="fornecedorPedidoMinimo" type="number" min="0" step="0.01" value="0" /></div>
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorPrazo">Prazo médio de entrega</label>
+              <input id="fornecedorPrazo" type="text" maxlength="80" placeholder="Ex.: 3 a 5 dias úteis" />
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorFrete">Condição de frete</label>
+              <input id="fornecedorFrete" type="text" maxlength="120" placeholder="Ex.: grátis acima de R$ 500" />
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorPagamento">Forma/prazo de pagamento</label>
+              <input id="fornecedorPagamento" type="text" maxlength="120" placeholder="Ex.: Pix ou boleto em 14 dias" />
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorUltimaCompra">Última compra</label>
+              <input id="fornecedorUltimaCompra" type="date" />
+            </div>
+            <div class="fornecedor-campo">
+              <label for="fornecedorAvaliacao">Sua avaliação</label>
+              <select id="fornecedorAvaliacao">
+                <option value="0">Ainda não avaliado</option>
+                <option value="1">1 — Ruim</option>
+                <option value="2">2 — Abaixo do esperado</option>
+                <option value="3">3 — Bom</option>
+                <option value="4">4 — Muito bom</option>
+                <option value="5">5 — Excelente</option>
+              </select>
+            </div>
+            <div class="fornecedor-campo fornecedor-coluna-inteira">
+              <label for="fornecedorObservacoes">Observações</label>
+              <textarea id="fornecedorObservacoes" maxlength="800" rows="3" placeholder="Qualidade, atendimento, problemas ou detalhes importantes"></textarea>
+            </div>
+          </div>
+
+          <div class="fornecedor-acoes-formulario">
+            <button id="botaoSalvarFornecedor" class="botao-principal" type="submit">Salvar fornecedor</button>
+            <button id="botaoCancelarFornecedor" class="botao-secundario oculto" type="button">Cancelar edição</button>
+          </div>
+        </form>
+
+        <section class="cartao fornecedores-lista-painel">
+          <div class="fornecedores-lista-topo">
+            <div>
+              <h3>Fornecedores cadastrados</h3>
+              <p>Priorize bons parceiros e evite espalhar suas compras.</p>
+            </div>
+            <div class="fornecedores-filtros">
+              <input id="buscaFornecedor" type="search" placeholder="Buscar nome ou produto" />
+              <select id="filtroStatusFornecedor">
+                <option value="todos">Todos</option>
+                <option value="preferenciais">Preferenciais</option>
+                <option value="ativo">Ativos</option>
+                <option value="teste">Em avaliação</option>
+                <option value="pausado">Pausados</option>
+              </select>
+            </div>
+          </div>
+          <div id="listaFornecedores" class="fornecedores-cards"></div>
+          <div id="estadoVazioFornecedores" class="estado-vazio">
+            <strong>Nenhum fornecedor cadastrado</strong>
+            Cadastre o primeiro parceiro para manter contatos e condições organizados.
+          </div>
+        </section>
+      </div>
     </section>
   </main>
   </div>
@@ -2630,6 +2791,7 @@
     inicializar();
   </script>
   <script src="precificador.js?v=2"></script>
+  <script src="fornecedores.js?v=1"></script>
   <script>
     (() => {
       const botao = document.getElementById("botaoTema");

@@ -273,6 +273,7 @@
 
   const ui = {
     form: $("formPrecificador"), financeiro: $("moduloFinanceiro"), precificador: $("moduloPrecificador"),
+    fornecedores: $("moduloFornecedores"),
     recomendado: $("resultadoPrecoRecomendado"), meta: $("resultadoMeta"), equilibrio: $("resultadoEquilibrio"),
     lucro: $("resultadoLucroAtual"), margem: $("resultadoMargemAtual"), peso: $("resultadoPesoTarifavel"),
     tipoPeso: $("resultadoTipoPeso"), alertas: $("resultadoAlertas"), composicao: $("resultadoComposicao"),
@@ -533,14 +534,16 @@
 
   document.querySelectorAll("[data-modulo]").forEach((botao) => {
     botao.addEventListener("click", () => {
-      const ativo = botao.dataset.modulo === "precificador";
-      ui.financeiro.classList.toggle("oculto", ativo);
-      ui.precificador.classList.toggle("oculto", !ativo);
+      const modulo = botao.dataset.modulo;
+      ui.financeiro.classList.toggle("oculto", modulo !== "financeiro");
+      ui.precificador.classList.toggle("oculto", modulo !== "precificador");
+      ui.fornecedores?.classList.toggle("oculto", modulo !== "fornecedores");
       document.querySelectorAll("[data-modulo]").forEach((item) => item.classList.toggle("ativo", item === botao));
-      if (ativo) {
+      if (modulo === "precificador") {
         calcularEExibir();
         carregarPrecificacoes();
       }
+      document.dispatchEvent(new CustomEvent("moduloalterado", { detail: { modulo } }));
     });
   });
 
