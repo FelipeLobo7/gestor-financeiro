@@ -807,6 +807,15 @@
             </select>
           </div>
 
+          <div class="campo" id="campoPagoPor">
+            <label for="pagoPor">De quem saiu o valor?</label>
+            <select id="pagoPor" required>
+              <option value="" selected disabled>Selecione</option>
+              <option value="Felipe">Felipe</option>
+              <option value="Bruna">Bruna</option>
+            </select>
+          </div>
+
           <div class="campo">
             <label for="observacao">Observação, opcional</label>
             <input
@@ -868,6 +877,7 @@
                 <th>Data</th>
                 <th>Descrição</th>
                 <th>Categoria</th>
+                <th>Pago por</th>
                 <th>Tipo</th>
                 <th>Valor</th>
                 <th>Ações</th>
@@ -1453,6 +1463,8 @@
       valor: document.getElementById("valor"),
       descricao: document.getElementById("descricao"),
       categoria: document.getElementById("categoria"),
+      campoPagoPor: document.getElementById("campoPagoPor"),
+      pagoPor: document.getElementById("pagoPor"),
       observacao: document.getElementById("observacao"),
       tituloFormulario: document.getElementById("tituloFormulario"),
       botaoSalvar: document.getElementById("botaoSalvar"),
@@ -1533,9 +1545,21 @@
       return document.querySelector('input[name="tipo"]:checked').value;
     }
 
+    function normalizarPagoPor(valor) {
+      return ["Felipe", "Bruna"].includes(valor) ? valor : null;
+    }
+
+    function atualizarCampoPagoPor() {
+      const ehDespesa = obterTipoSelecionado() === "despesa";
+      elementos.campoPagoPor.classList.toggle("oculto", !ehDespesa);
+      elementos.pagoPor.required = ehDespesa;
+      elementos.pagoPor.disabled = !ehDespesa;
+    }
+
     function selecionarTipo(tipo) {
       const radio = document.querySelector(`input[name="tipo"][value="${tipo}"]`);
       if (radio) radio.checked = true;
+      atualizarCampoPagoPor();
     }
 
     function mostrarToast(mensagem) {
@@ -1681,6 +1705,9 @@
                 : ""}
             </td>
             <td>${escaparHtml(item.categoria)}</td>
+            <td>${escaparHtml(
+              item.tipo === "despesa" ? item.pagoPor || "Não informado" : "—"
+            )}</td>
             <td><span class="etiqueta ${tipoClasse}">${tipoTexto}</span></td>
             <td class="${valorClasse}"><strong>${sinal} ${moeda(item.valor)}</strong></td>
             <td>
@@ -1707,6 +1734,7 @@
         valor: Number(linha.valor),
         descricao: linha.descricao,
         categoria: linha.categoria,
+        pagoPor: normalizarPagoPor(linha.pago_por),
         observacao: linha.observacao || "",
         criadoEm: linha.criado_em
       };
@@ -1721,6 +1749,9 @@
         valor: Number(item.valor),
         descricao: String(item.descricao || "").trim(),
         categoria: String(item.categoria || "Outros").trim(),
+        pago_por: item.tipo === "despesa"
+          ? normalizarPagoPor(item.pagoPor || item.pago_por)
+          : null,
         observacao: String(item.observacao || "").trim() || null,
         criado_em: item.criadoEm || new Date().toISOString()
       };
@@ -1729,7 +1760,7 @@
     async function carregarLancamentos() {
       const { data, error } = await supabaseClient
         .from("lancamentos")
-        .select("id,tipo,data,valor,descricao,categoria,observacao,criado_em")
+        .select("id,tipo,data,valor,descricao,categoria,pago_por,observacao,criado_em")
         .order("data", { ascending: false })
         .order("criado_em", { ascending: false });
 
@@ -1959,13 +1990,23 @@
 
       const id = elementos.id.value || gerarId();
       const existente = lancamentos.find(item => item.id === id);
+      const tipo = obterTipoSelecionado();
+      const pagoPor = tipo === "despesa" ? normalizarPagoPor(elementos.pagoPor.value) : null;
+
+      if (tipo === "despesa" && !pagoPor) {
+        mostrarToast("Informe de quem saiu o valor.");
+        elementos.pagoPor.focus();
+        return;
+      }
+
       const item = {
         id,
-        tipo: obterTipoSelecionado(),
+        tipo,
         data: elementos.data.value,
         valor,
         descricao: elementos.descricao.value.trim(),
         categoria: elementos.categoria.value,
+        pagoPor,
         observacao: elementos.observacao.value.trim(),
         criadoEm: existente?.criadoEm || new Date().toISOString()
       };
@@ -1984,6 +2025,7 @@
             valor: linha.valor,
             descricao: linha.descricao,
             categoria: linha.categoria,
+            pago_por: linha.pago_por,
             observacao: linha.observacao
           }).eq("id", id)
         : supabaseClient.from("lancamentos").insert(linha);
@@ -2015,6 +2057,7 @@
         elementos.valor.value = item.valor;
         elementos.descricao.value = item.descricao;
         elementos.categoria.value = item.categoria;
+        elementos.pagoPor.value = item.pagoPor || "";
         elementos.observacao.value = item.observacao || "";
         selecionarTipo(item.tipo);
         elementos.tituloFormulario.textContent = "Editar lançamento";
@@ -2044,6 +2087,10 @@
     });
 
     elementos.botaoCancelar.addEventListener("click", limparFormulario);
+
+    document.querySelectorAll('input[name="tipo"]').forEach(radio => {
+      radio.addEventListener("change", atualizarCampoPagoPor);
+    });
 
     [elementos.filtroBusca, elementos.filtroTipo, elementos.filtroMes].forEach(elemento => {
       elemento.addEventListener("input", renderizarTabela);
@@ -2135,7 +2182,15 @@
     });
 
     elementos.exportarCsv.addEventListener("click", () => {
-      const cabecalho = ["Data", "Tipo", "Descrição", "Categoria", "Observação", "Valor"];
+      const cabecalho = [
+        "Data",
+        "Tipo",
+        "Descrição",
+        "Categoria",
+        "Pago por",
+        "Observação",
+        "Valor"
+      ];
       const linhas = lancamentos
         .slice()
         .sort((a, b) => a.data.localeCompare(b.data))
@@ -2144,6 +2199,7 @@
           item.tipo === "receita" ? "Receita" : "Despesa",
           item.descricao,
           item.categoria,
+          item.tipo === "despesa" ? item.pagoPor || "Não informado" : "—",
           item.observacao || "",
           Number(item.valor).toFixed(2).replace(".", ",")
         ]);
@@ -2189,6 +2245,7 @@
 
     async function inicializar() {
       elementos.data.value = hojeIso();
+      atualizarCampoPagoPor();
       atualizarTela();
 
       if (!supabaseClient) {
