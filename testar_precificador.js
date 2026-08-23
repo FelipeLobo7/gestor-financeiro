@@ -33,6 +33,45 @@ igual(precificador.calcularTarifaFba(130, 1.2), 16.95);
 igual(precificador.calcularTarifaFba(170, 11), 54.55);
 assert.strictEqual(precificador.calcularTarifaFba(200, 22), null);
 
+const promocaoFba = {
+  logistica: "fba",
+  categoria: "casa",
+  comissaoManual: "",
+  comissaoZero: true,
+  tarifaManual: "",
+  fbaPromocional: true,
+  tarifaFbaPromocional: 6,
+  peso: 200,
+  pesoEmbalagem: 20,
+  comprimento: 20,
+  largura: 15,
+  altura: 10,
+  descontoLogistica: 0,
+  custoProduto: 10,
+  freteCompra: 0,
+  embalagem: 0,
+  preparacao: 0,
+  outrosFixos: 0,
+  imposto: 0,
+  ads: 0,
+  reservaDevolucao: 0,
+  cupom: 0,
+  parcelamento: false,
+  plano: "profissional-gratis",
+  unidadesMes: 30,
+  mesesEstoque: 0,
+  custoFbaExtra: 0,
+  freteCobrado: 0,
+  freteProprio: 0,
+  tarifaOnsite: 0
+};
+const resultadoPromocaoFba = precificador.calcularCenario(promocaoFba, 30);
+igual(resultadoPromocaoFba.logistica.liquida, 6);
+igual(resultadoPromocaoFba.comissao, 0);
+igual(precificador.buscarPreco(promocaoFba, 20), 20);
+igual(precificador.calcularCenario({ ...promocaoFba, descontoLogistica: 50 }, 30).logistica.liquida, 6);
+igual(precificador.calcularCenario({ ...promocaoFba, tarifaManual: 8 }, 30).logistica.liquida, 8);
+
 // Peso dimensional deve prevalecer quando for maior.
 const peso = precificador.obterPesoTarifavel({
   peso: 500,

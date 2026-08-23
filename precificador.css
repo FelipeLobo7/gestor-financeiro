@@ -305,7 +305,7 @@
 
 .preco-opcoes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 10px;
   margin-top: 17px;
 }
@@ -636,5 +636,206 @@
 
   .precificador-grade {
     display: block;
+  }
+}
+
+/* Interface enxuta: os custos menos usados continuam disponíveis sem poluir a tela. */
+.campo-avancado,
+.opcao-avancada {
+  display: none !important;
+}
+
+.precificador-formulario.mostrar-avancado .campo-avancado {
+  display: block !important;
+}
+
+.precificador-formulario.mostrar-avancado .opcao-avancada {
+  display: flex !important;
+}
+
+.botao-opcoes-avancadas {
+  width: 100%;
+  min-height: 44px;
+  border: 1px dashed var(--borda);
+  border-radius: 11px;
+  background: var(--cartao);
+  color: var(--primaria);
+  font-weight: 800;
+}
+
+.botao-opcoes-avancadas:hover {
+  border-style: solid;
+  border-color: var(--primaria);
+  background: #f5f7ff;
+}
+
+.campo-fba-promocao {
+  padding: 12px;
+  border: 1px solid #b7e3c6;
+  border-radius: 10px;
+  background: var(--verde-fundo);
+}
+
+.preco-promocao-check {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--verde);
+}
+
+.preco-promocao-check input {
+  margin-top: 2px;
+}
+
+.botao-tema {
+  position: fixed;
+  z-index: 300;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+  background: rgba(17, 24, 39, 0.5);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  backdrop-filter: blur(8px);
+}
+
+.botao-tema:hover {
+  background: rgba(17, 24, 39, 0.75);
+}
+
+/* Tema escuro: variáveis e correções para todos os componentes do site. */
+html[data-tema="escuro"] {
+  color-scheme: dark;
+  --fundo: #090f1c;
+  --cartao: #111827;
+  --texto: #e7edf7;
+  --texto-suave: #9aa8bd;
+  --borda: #2b374a;
+  --primaria: #7593ff;
+  --primaria-escura: #93a9ff;
+  --verde: #4ade80;
+  --verde-fundo: #10291d;
+  --vermelho: #fb7d7d;
+  --vermelho-fundo: #351a20;
+  --amarelo: #fbbf24;
+  --amarelo-fundo: #34290f;
+  --sombra: 0 12px 34px rgba(0, 0, 0, 0.28);
+}
+
+html[data-tema="escuro"] body {
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+html[data-tema="escuro"] .topo,
+html[data-tema="escuro"] .tela-login {
+  background: linear-gradient(135deg, #101b3c, #203d91);
+}
+
+html[data-tema="escuro"] .campo input,
+html[data-tema="escuro"] .campo select,
+html[data-tema="escuro"] .filtros input,
+html[data-tema="escuro"] .filtros select,
+html[data-tema="escuro"] .preco-campo > input,
+html[data-tema="escuro"] .preco-campo > select,
+html[data-tema="escuro"] .precificacoes-salvas input[type="search"],
+html[data-tema="escuro"] .preco-input-dinheiro,
+html[data-tema="escuro"] .preco-input-percentual,
+html[data-tema="escuro"] .preco-input-unidade,
+html[data-tema="escuro"] .tipo-botoes label,
+html[data-tema="escuro"] .botao-secundario,
+html[data-tema="escuro"] .botao-perigo,
+html[data-tema="escuro"] .botao-icone,
+html[data-tema="escuro"] .preco-opcoes label {
+  background: #151e2e;
+  color: var(--texto);
+}
+
+html[data-tema="escuro"] input::placeholder {
+  color: #718096;
+}
+
+html[data-tema="escuro"] .preco-input-dinheiro span,
+html[data-tema="escuro"] .preco-input-percentual span,
+html[data-tema="escuro"] .preco-input-unidade span,
+html[data-tema="escuro"] th {
+  background: #182235;
+  color: var(--texto-suave);
+}
+
+html[data-tema="escuro"] tbody tr:hover,
+html[data-tema="escuro"] .linha-selecionada,
+html[data-tema="escuro"] .comparacao-atual,
+html[data-tema="escuro"] .modulo-botao:hover,
+html[data-tema="escuro"] .botao-opcoes-avancadas:hover {
+  background: #18243a;
+}
+
+html[data-tema="escuro"] .modulo-botao span,
+html[data-tema="escuro"] .precificador-bloco-titulo > span {
+  background: #1d2c50;
+  color: #a9baff;
+}
+
+html[data-tema="escuro"] .modulo-botao.ativo span {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+html[data-tema="escuro"] .precificador-fonte {
+  border-color: #344667;
+  background: #151f32;
+}
+
+html[data-tema="escuro"] .precificador-selo {
+  background: #3a2d0d;
+  color: #ffd166;
+}
+
+html[data-tema="escuro"] .campo-fba-promocao {
+  border-color: #285c3a;
+  background: var(--verde-fundo);
+}
+
+html[data-tema="escuro"] .resultado-destaque {
+  background: linear-gradient(135deg, #1b347b, #3559c8 70%, #5275de);
+}
+
+html[data-tema="escuro"] .toast {
+  background: #e7edf7;
+  color: #111827;
+}
+
+html[data-tema="escuro"] .barra-fundo {
+  background: #253248;
+}
+
+html[data-tema="escuro"] .botao-tema {
+  border-color: var(--borda);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+@media (max-width: 520px) {
+  .botao-tema {
+    top: 9px;
+    right: 9px;
+  }
+
+  .botao-tema #textoTema {
+    display: none;
+  }
+}
+
+@media print {
+  .botao-tema,
+  .botao-opcoes-avancadas {
+    display: none !important;
   }
 }

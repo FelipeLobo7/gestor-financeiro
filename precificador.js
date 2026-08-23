@@ -169,7 +169,15 @@
     } else if (modalidade === "dba") base = calcularTarifaDba(preco, obterPesoTarifavel(d).tarifavel, d.regiao);
     else if (modalidade === "fba") {
       const dimensoesInvalidas = numero(d.comprimento) > 105 || numero(d.largura) > 105 || numero(d.altura) > 105 || numero(d.comprimento) + numero(d.largura) + numero(d.altura) > 200;
-      base = dimensoesInvalidas ? null : calcularTarifaFba(preco, obterPesoTarifavel(d).tarifavel);
+      const pesoInvalido = obterPesoTarifavel(d).tarifavel >= 22;
+      if (dimensoesInvalidas || pesoInvalido) {
+        base = null;
+      } else if (d.fbaPromocional) {
+        base = Math.max(0, numero(d.tarifaFbaPromocional, 6));
+        origem = "Tarifa promocional FBA";
+      } else {
+        base = calcularTarifaFba(preco, obterPesoTarifavel(d).tarifavel);
+      }
     }
     else if (modalidade === "onsite") {
       base = numero(d.tarifaOnsite) > 0 ? numero(d.tarifaOnsite) : null;
@@ -179,7 +187,10 @@
       origem = "Custo informado";
     }
     if (base === null) return { base: null, liquida: null, desconto: 0, origem };
-    const desconto = ["dba", "fba", "onsite"].includes(modalidade) ? base * limitar(d.descontoLogistica, 0, 100) / 100 : 0;
+    const tarifaFbaJaPromocional = modalidade === "fba" && d.fbaPromocional && origem === "Tarifa promocional FBA";
+    const desconto = ["dba", "fba", "onsite"].includes(modalidade) && !tarifaFbaJaPromocional
+      ? base * limitar(d.descontoLogistica, 0, 100) / 100
+      : 0;
     return { base, liquida: Math.max(0, base - desconto), desconto, origem };
   }
 
@@ -254,6 +265,7 @@
     parcelamento: $("precoParcelamento"), comissaoZero: $("precoComissaoZero"), peso: $("precoPeso"),
     comprimento: $("precoComprimento"), largura: $("precoLargura"), altura: $("precoAltura"),
     pesoEmbalagem: $("precoPesoEmbalagem"), regiao: $("precoRegiao"), mesesEstoque: $("precoMesesEstoque"),
+    fbaPromocional: $("precoFbaPromocional"), tarifaFbaPromocional: $("precoTarifaFbaPromocional"),
     tarifaManual: $("precoTarifaManual"), tarifaOnsite: $("precoTarifaOnsite"), freteProprio: $("precoFreteProprio"),
     freteCobrado: $("precoFreteCobrado"), custoFbaExtra: $("precoCustoFbaExtra")
   };
@@ -266,7 +278,8 @@
     tipoPeso: $("resultadoTipoPeso"), alertas: $("resultadoAlertas"), composicao: $("resultadoComposicao"),
     comparacao: $("tabelaComparacaoLogistica"), salvar: $("botaoSalvarPrecificacao"), limpar: $("botaoLimparPrecificador"),
     copiar: $("botaoCopiarResumo"), filtro: $("filtroPrecificacoes"), tabela: $("tabelaPrecificacoes"),
-    vazio: $("estadoVazioPrecificacoes")
+    vazio: $("estadoVazioPrecificacoes"), avancado: $("botaoOpcoesAvancadas"),
+    campoFbaPromocao: $("campoFbaPromocao")
   };
   let ultimoResultado;
   let precificacoes = [];
@@ -282,7 +295,7 @@
     const d = {};
     Object.entries(campos).forEach(([chave, el]) => {
       if (["id", "nome", "sku", "categoria", "logistica", "plano", "regiao"].includes(chave)) d[chave] = el.value;
-      else if (["parcelamento", "comissaoZero"].includes(chave)) d[chave] = el.checked;
+      else if (["parcelamento", "comissaoZero", "fbaPromocional"].includes(chave)) d[chave] = el.checked;
       else if (["tarifaManual", "comissaoManual"].includes(chave)) d[chave] = el.value.trim() === "" ? "" : numero(el.value);
       else d[chave] = numero(el.value);
     });
@@ -290,11 +303,14 @@
   }
 
   function preencherDados(d) {
+    if (!("fbaPromocional" in d)) campos.fbaPromocional.checked = false;
     Object.entries(campos).forEach(([chave, el]) => {
       if (!(chave in d)) return;
-      if (["parcelamento", "comissaoZero"].includes(chave)) el.checked = Boolean(d[chave]);
+      if (["parcelamento", "comissaoZero", "fbaPromocional"].includes(chave)) el.checked = Boolean(d[chave]);
       else el.value = d[chave] ?? "";
     });
+    const usaAvancado = [d.preparacao, d.outrosFixos, d.ads, d.reservaDevolucao, d.cupom, d.descontoLogistica, d.custoFbaExtra].some((valor) => numero(valor) > 0) || d.parcelamento || d.comissaoManual !== "" && d.comissaoManual != null || d.tarifaManual !== "" && d.tarifaManual != null;
+    definirAvancado(usaAvancado);
     atualizarCamposLogistica();
     calcularEExibir();
   }
@@ -305,7 +321,9 @@
     if (d.imposto <= 0) a.push(["aviso", "O imposto está em 0%. Confirme a alíquota efetiva com sua contabilidade."]);
     if (d.logistica === "onsite" && d.tarifaManual === "" && d.tarifaOnsite <= 0) a.push(["erro", "Informe a tarifa do FBA Onsite exibida na sua conta Amazon."]);
     if (d.comissaoZero) a.push(["aviso", "Comissão zero aplicada. Confirme se a promoção está ativa para este ASIN e período."]);
-    if (d.descontoLogistica > 0) a.push(["aviso", `Desconto logístico de ${percentual(d.descontoLogistica)} aplicado. Confirme a elegibilidade na Seller Central.`]);
+    if (d.logistica === "fba" && d.fbaPromocional) a.push(["aviso", `Tarifa promocional FBA de ${moeda(d.tarifaFbaPromocional)} aplicada. Desmarque a opção assim que a campanha terminar.`]);
+    if (d.descontoLogistica > 0 && d.logistica === "fba" && d.fbaPromocional) a.push(["aviso", "O desconto percentual não foi acumulado com a tarifa fixa FBA, evitando contar a mesma promoção duas vezes."]);
+    else if (d.descontoLogistica > 0) a.push(["aviso", `Desconto logístico de ${percentual(d.descontoLogistica)} aplicado. Confirme a elegibilidade na Seller Central.`]);
     if (peso.tarifavel > 30 && d.logistica === "dba") a.push(["erro", "O peso tarifável ultrapassa 30 kg; a tarifa DBA não foi calculada."]);
     if (peso.tarifavel >= 22 && d.logistica === "fba") a.push(["erro", "A tabela FBA consultada só se aplica a produtos com peso inferior a 22 kg."]);
     if (d.logistica === "fba" && (d.comprimento > 105 || d.largura > 105 || d.altura > 105 || d.comprimento + d.largura + d.altura > 200)) a.push(["erro", "As dimensões ultrapassam o limite FBA de 105 cm por lado e 200 cm na soma."]);
@@ -373,10 +391,20 @@
     const tipo = campos.logistica.value;
     const contextuais = [campos.regiao, campos.tarifaOnsite, campos.freteProprio, campos.freteCobrado, campos.mesesEstoque, campos.custoFbaExtra];
     contextuais.forEach((el) => el.closest(".preco-campo").classList.add("campo-contextual-inativo"));
+    ui.campoFbaPromocao.classList.toggle("oculto", tipo !== "fba");
     if (tipo === "dba") campos.regiao.closest(".preco-campo").classList.remove("campo-contextual-inativo");
     if (tipo === "onsite") campos.tarifaOnsite.closest(".preco-campo").classList.remove("campo-contextual-inativo");
     if (tipo === "propria") [campos.freteProprio, campos.freteCobrado].forEach((el) => el.closest(".preco-campo").classList.remove("campo-contextual-inativo"));
     if (tipo === "fba") [campos.mesesEstoque, campos.custoFbaExtra].forEach((el) => el.closest(".preco-campo").classList.remove("campo-contextual-inativo"));
+    campos.tarifaFbaPromocional.disabled = !campos.fbaPromocional.checked;
+  }
+
+  function definirAvancado(aberto) {
+    ui.form.classList.toggle("mostrar-avancado", aberto);
+    ui.avancado.setAttribute("aria-expanded", String(aberto));
+    ui.avancado.innerHTML = aberto
+      ? '<span aria-hidden="true">−</span> Ocultar custos e opções avançadas'
+      : '<span aria-hidden="true">＋</span> Mostrar custos e opções avançadas';
   }
 
   function limparFormulario() {
@@ -389,6 +417,8 @@
     campos.unidadesMes.value = 30;
     campos.margemDesejada.value = 20;
     campos.mesesEstoque.value = 1;
+    campos.tarifaFbaPromocional.value = 6;
+    definirAvancado(false);
     atualizarCamposLogistica();
     calcularEExibir();
     campos.nome.focus();
@@ -517,9 +547,10 @@
   ui.form.addEventListener("submit", (e) => { e.preventDefault(); calcularEExibir(); });
   ui.form.addEventListener("input", calcularEExibir);
   ui.form.addEventListener("change", (e) => {
-    if (e.target === campos.logistica) atualizarCamposLogistica();
+    if (e.target === campos.logistica || e.target === campos.fbaPromocional) atualizarCamposLogistica();
     calcularEExibir();
   });
+  ui.avancado.addEventListener("click", () => definirAvancado(!ui.form.classList.contains("mostrar-avancado")));
   ui.salvar.addEventListener("click", salvarPrecificacao);
   ui.limpar.addEventListener("click", limparFormulario);
   ui.copiar.addEventListener("click", copiarResumo);
@@ -531,6 +562,7 @@
     if (botao.dataset.acao === "excluir") excluirPrecificacao(botao.dataset.id);
   });
 
+  definirAvancado(false);
   atualizarCamposLogistica();
   calcularEExibir();
   setTimeout(carregarPrecificacoes, 1200);

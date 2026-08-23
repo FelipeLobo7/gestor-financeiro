@@ -5,6 +5,10 @@ Sistema web com dois módulos:
 - gestor financeiro sincronizado com Supabase;
 - precificador Amazon para DBA, FBA, FBA Onsite e logística própria.
 
+O site possui tema claro/escuro, opções avançadas recolhidas por padrão, comissão
+zero promocional e tarifa fixa promocional do FBA configurável (R$ 6,00 por padrão).
+Essas promoções devem ser desmarcadas quando deixarem de valer na conta Amazon.
+
 ## Ativação do precificador
 
 1. Abra o SQL Editor do projeto no Supabase.

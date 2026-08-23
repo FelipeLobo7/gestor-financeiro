@@ -5,7 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Gestor financeiro e precificador Amazon para pequenas empresas." />
   <title>Gestor do E-commerce</title>
-  <link rel="stylesheet" href="precificador.css?v=1" />
+  <link rel="stylesheet" href="precificador.css?v=2" />
+
+  <script>
+    try {
+      const temaSalvo = localStorage.getItem("gestorTema");
+      const prefereEscuro = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.tema = temaSalvo || (prefereEscuro ? "escuro" : "claro");
+    } catch (_) {}
+  </script>
 
   <style>
     :root {
@@ -619,6 +627,11 @@
 </head>
 
 <body>
+  <button id="botaoTema" class="botao-tema" type="button" aria-label="Ativar tema escuro" title="Alternar tema">
+    <span id="iconeTema" aria-hidden="true">☾</span>
+    <span id="textoTema">Tema escuro</span>
+  </button>
+
   <section id="telaLogin" class="tela-login">
     <div class="cartao login-cartao">
       <h1>Gestor Financeiro</h1>
@@ -998,6 +1011,10 @@
             </div>
           </section>
 
+          <button id="botaoOpcoesAvancadas" class="botao-opcoes-avancadas" type="button" aria-expanded="false">
+            <span aria-hidden="true">＋</span> Mostrar custos e opções avançadas
+          </button>
+
           <section class="cartao precificador-bloco">
             <div class="precificador-bloco-titulo">
               <span>2</span>
@@ -1024,15 +1041,15 @@
                 <label for="precoEmbalagem">Embalagem</label>
                 <div class="preco-input-dinheiro"><span>R$</span><input id="precoEmbalagem" type="number" min="0" step="0.01" value="0" /></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoPreparacao">Etiqueta e preparação</label>
                 <div class="preco-input-dinheiro"><span>R$</span><input id="precoPreparacao" type="number" min="0" step="0.01" value="0" /></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoOutrosFixos">Outros custos por unidade</label>
                 <div class="preco-input-dinheiro"><span>R$</span><input id="precoOutrosFixos" type="number" min="0" step="0.01" value="0" /></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoUnidadesMes">Vendas estimadas por mês</label>
                 <input id="precoUnidadesMes" type="number" min="1" step="1" value="30" />
                 <small>Usado para ratear a mensalidade do plano.</small>
@@ -1059,24 +1076,24 @@
                 <div class="preco-input-percentual"><input id="precoImposto" type="number" min="0" max="50" step="0.01" value="0" /><span>%</span></div>
                 <small>Use a alíquota efetiva confirmada pela contabilidade.</small>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoComissaoManual">Comissão Amazon manual, opcional</label>
                 <div class="preco-input-percentual"><input id="precoComissaoManual" type="number" min="0" max="100" step="0.01" placeholder="Da categoria" /><span>%</span></div>
                 <small>Preenchida, substitui o percentual da categoria; o mínimo continua válido.</small>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoAds">Amazon Ads</label>
                 <div class="preco-input-percentual"><input id="precoAds" type="number" min="0" max="50" step="0.1" value="0" /><span>%</span></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoReservaDevolucao">Reserva para devoluções/perdas</label>
                 <div class="preco-input-percentual"><input id="precoReservaDevolucao" type="number" min="0" max="30" step="0.1" value="0" /><span>%</span></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoCupom">Cupons e promoções custeados</label>
                 <div class="preco-input-percentual"><input id="precoCupom" type="number" min="0" max="50" step="0.1" value="0" /><span>%</span></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoDescontoLogistica">Desconto atual na logística</label>
                 <div class="preco-input-percentual"><input id="precoDescontoLogistica" type="number" min="0" max="100" step="0.1" value="0" /><span>%</span></div>
                 <small>Ex.: informe 50 se a campanha estiver ativa na sua conta.</small>
@@ -1084,7 +1101,7 @@
             </div>
 
             <div class="preco-opcoes">
-              <label><input id="precoParcelamento" type="checkbox" /> Incluir tarifa de parcelamento sem juros de 1,5%</label>
+              <label class="opcao-avancada"><input id="precoParcelamento" type="checkbox" /> Incluir tarifa de parcelamento sem juros de 1,5%</label>
               <label><input id="precoComissaoZero" type="checkbox" /> Minha oferta está com comissão Amazon zero</label>
             </div>
           </section>
@@ -1103,19 +1120,19 @@
                 <label for="precoPeso">Peso do produto</label>
                 <div class="preco-input-unidade"><input id="precoPeso" type="number" min="0" step="1" value="200" /><span>g</span></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoComprimento">Comprimento</label>
                 <div class="preco-input-unidade"><input id="precoComprimento" type="number" min="0" step="0.1" value="0" /><span>cm</span></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoLargura">Largura</label>
                 <div class="preco-input-unidade"><input id="precoLargura" type="number" min="0" step="0.1" value="0" /><span>cm</span></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoAltura">Altura</label>
                 <div class="preco-input-unidade"><input id="precoAltura" type="number" min="0" step="0.1" value="0" /><span>cm</span></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoPesoEmbalagem">Peso adicional da embalagem</label>
                 <div class="preco-input-unidade"><input id="precoPesoEmbalagem" type="number" min="0" step="1" value="20" /><span>g</span></div>
                 <small>A tabela FBA considera 20 g de embalagem.</small>
@@ -1129,11 +1146,19 @@
                   <option value="demais-regioes">Centro-Oeste, Norte e Nordeste</option>
                 </select>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-fba-promocao" id="campoFbaPromocao">
+                <label class="preco-promocao-check">
+                  <input id="precoFbaPromocional" type="checkbox" checked />
+                  Usar minha tarifa promocional fixa do FBA
+                </label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoTarifaFbaPromocional" type="number" min="0" step="0.01" value="6" /></div>
+                <small>Atualmente configurada em R$ 6,00 por unidade. Desmarque quando a promoção terminar.</small>
+              </div>
+              <div class="preco-campo campo-avancado">
                 <label for="precoMesesEstoque">Meses médios no estoque FBA</label>
                 <input id="precoMesesEstoque" type="number" min="0" max="24" step="0.1" value="1" />
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoTarifaManual">Substituir tarifa logística, opcional</label>
                 <div class="preco-input-dinheiro"><span>R$</span><input id="precoTarifaManual" type="number" min="0" step="0.01" placeholder="Automática" /></div>
                 <small>Preenchido, este valor substitui a tabela automática.</small>
@@ -1150,7 +1175,7 @@
                 <label for="precoFreteCobrado">Frete cobrado do cliente</label>
                 <div class="preco-input-dinheiro"><span>R$</span><input id="precoFreteCobrado" type="number" min="0" step="0.01" value="0" /></div>
               </div>
-              <div class="preco-campo">
+              <div class="preco-campo campo-avancado">
                 <label for="precoCustoFbaExtra">Outras tarifas FBA por unidade</label>
                 <div class="preco-input-dinheiro"><span>R$</span><input id="precoCustoFbaExtra" type="number" min="0" step="0.01" value="0" /></div>
                 <small>Coleta, remoção, estoque antigo ou outro custo não incluído acima.</small>
@@ -2604,6 +2629,29 @@
 
     inicializar();
   </script>
-  <script src="precificador.js?v=1"></script>
+  <script src="precificador.js?v=2"></script>
+  <script>
+    (() => {
+      const botao = document.getElementById("botaoTema");
+      const icone = document.getElementById("iconeTema");
+      const texto = document.getElementById("textoTema");
+
+      function atualizarBotaoTema() {
+        const escuro = document.documentElement.dataset.tema === "escuro";
+        icone.textContent = escuro ? "☀" : "☾";
+        texto.textContent = escuro ? "Tema claro" : "Tema escuro";
+        botao.setAttribute("aria-label", escuro ? "Ativar tema claro" : "Ativar tema escuro");
+      }
+
+      botao.addEventListener("click", () => {
+        const proximo = document.documentElement.dataset.tema === "escuro" ? "claro" : "escuro";
+        document.documentElement.dataset.tema = proximo;
+        localStorage.setItem("gestorTema", proximo);
+        atualizarBotaoTema();
+      });
+
+      atualizarBotaoTema();
+    })();
+  </script>
 </body>
 </html>
