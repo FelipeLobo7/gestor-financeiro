@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Gestor financeiro simples para pequenas empresas." />
-  <title>Gestor Financeiro da Empresa</title>
+  <meta name="description" content="Gestor financeiro e precificador Amazon para pequenas empresas." />
+  <title>Gestor do E-commerce</title>
+  <link rel="stylesheet" href="precificador.css?v=1" />
 
   <style>
     :root {
@@ -694,10 +695,10 @@
   <div id="aplicativo" class="oculto">
   <header class="topo">
     <div class="topo-conteudo">
-      <h1>Gestor Financeiro</h1>
+      <h1>Gestor do E-commerce</h1>
       <p>
-        Registre todos os custos e as vendas da sua empresa para acompanhar quando
-        o investimento será recuperado e o saldo começará a ficar positivo.
+        Controle as finanças da empresa e calcule preços de venda com todos os custos
+        da operação na Amazon.
       </p>
       <div class="conta-barra">
         <span id="emailUsuario" class="conta-email"></span>
@@ -707,6 +708,18 @@
   </header>
 
   <main class="container">
+    <nav class="modulos-nav cartao" aria-label="Ferramentas do sistema">
+      <button class="modulo-botao ativo" type="button" data-modulo="financeiro">
+        <span aria-hidden="true">▦</span>
+        Gestor financeiro
+      </button>
+      <button class="modulo-botao" type="button" data-modulo="precificador">
+        <span aria-hidden="true">R$</span>
+        Precificador Amazon
+      </button>
+    </nav>
+
+    <div id="moduloFinanceiro">
     <section class="resumo" aria-label="Resumo financeiro">
       <article class="cartao cartao-resumo">
         <div class="rotulo">Total de receitas</div>
@@ -917,6 +930,315 @@
           </button>
         </div>
       </section>
+    </section>
+    </div>
+
+    <section id="moduloPrecificador" class="precificador-modulo oculto" aria-labelledby="tituloPrecificador">
+      <header class="precificador-cabecalho cartao">
+        <div>
+          <span class="precificador-selo">AMAZON BRASIL</span>
+          <h2 id="tituloPrecificador">Precificador de produtos</h2>
+          <p>
+            Descubra o preço mínimo, a margem real e quanto sobra depois de comissão,
+            imposto, anúncios, logística e todos os custos do produto.
+          </p>
+        </div>
+        <div class="precificador-fonte">
+          <strong>Base de tarifas</strong>
+          <span>Amazon Brasil · comissões 20/01/2025 · logística 01/08/2025</span>
+          <a href="https://venda.amazon.com.br/precos" target="_blank" rel="noopener noreferrer">
+            Conferir tabela oficial ↗
+          </a>
+        </div>
+      </header>
+
+      <div class="precificador-grade">
+        <form id="formPrecificador" class="precificador-formulario" novalidate>
+          <input type="hidden" id="precoId" />
+
+          <section class="cartao precificador-bloco">
+            <div class="precificador-bloco-titulo">
+              <span>1</span>
+              <div>
+                <h3>Produto e modalidade</h3>
+                <p>Identifique o produto e escolha como ele será enviado.</p>
+              </div>
+            </div>
+
+            <div class="preco-campos preco-duas-colunas">
+              <div class="preco-campo preco-coluna-inteira">
+                <label for="precoNome">Nome do produto</label>
+                <input id="precoNome" type="text" maxlength="120" placeholder="Ex.: Kit com 15 cabides" required />
+              </div>
+              <div class="preco-campo">
+                <label for="precoSku">SKU ou ASIN, opcional</label>
+                <input id="precoSku" type="text" maxlength="60" placeholder="Ex.: CABIDE-15" />
+              </div>
+              <div class="preco-campo">
+                <label for="precoCategoria">Categoria na Amazon</label>
+                <select id="precoCategoria" required></select>
+              </div>
+              <div class="preco-campo">
+                <label for="precoLogistica">Modalidade logística</label>
+                <select id="precoLogistica" required>
+                  <option value="dba">DBA — Delivery by Amazon</option>
+                  <option value="fba">FBA — Logística da Amazon</option>
+                  <option value="onsite">FBA Onsite</option>
+                  <option value="propria">Logística do vendedor</option>
+                </select>
+              </div>
+              <div class="preco-campo">
+                <label for="precoPlano">Plano de vendas</label>
+                <select id="precoPlano">
+                  <option value="profissional-gratis">Profissional — período gratuito</option>
+                  <option value="profissional">Profissional — R$ 19/mês</option>
+                  <option value="individual">Individual — R$ 2 por item</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section class="cartao precificador-bloco">
+            <div class="precificador-bloco-titulo">
+              <span>2</span>
+              <div>
+                <h3>Custos por unidade</h3>
+                <p>Informe o que realmente é gasto para colocar uma unidade à venda.</p>
+              </div>
+            </div>
+
+            <div class="preco-campos preco-tres-colunas">
+              <div class="preco-campo destaque">
+                <label for="precoAtual">Preço atual de venda</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoAtual" type="number" min="0" step="0.01" value="0" /></div>
+              </div>
+              <div class="preco-campo destaque">
+                <label for="precoCustoProduto">Custo do produto</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoCustoProduto" type="number" min="0" step="0.01" value="0" required /></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoFreteCompra">Frete de compra rateado</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoFreteCompra" type="number" min="0" step="0.01" value="0" /></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoEmbalagem">Embalagem</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoEmbalagem" type="number" min="0" step="0.01" value="0" /></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoPreparacao">Etiqueta e preparação</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoPreparacao" type="number" min="0" step="0.01" value="0" /></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoOutrosFixos">Outros custos por unidade</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoOutrosFixos" type="number" min="0" step="0.01" value="0" /></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoUnidadesMes">Vendas estimadas por mês</label>
+                <input id="precoUnidadesMes" type="number" min="1" step="1" value="30" />
+                <small>Usado para ratear a mensalidade do plano.</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="cartao precificador-bloco">
+            <div class="precificador-bloco-titulo">
+              <span>3</span>
+              <div>
+                <h3>Impostos, margem e despesas variáveis</h3>
+                <p>Percentuais calculados sobre a receita da venda.</p>
+              </div>
+            </div>
+
+            <div class="preco-campos preco-tres-colunas">
+              <div class="preco-campo destaque">
+                <label for="precoMargemDesejada">Margem líquida desejada</label>
+                <div class="preco-input-percentual"><input id="precoMargemDesejada" type="number" min="0" max="80" step="0.1" value="20" /><span>%</span></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoImposto">Imposto sobre a venda</label>
+                <div class="preco-input-percentual"><input id="precoImposto" type="number" min="0" max="50" step="0.01" value="0" /><span>%</span></div>
+                <small>Use a alíquota efetiva confirmada pela contabilidade.</small>
+              </div>
+              <div class="preco-campo">
+                <label for="precoComissaoManual">Comissão Amazon manual, opcional</label>
+                <div class="preco-input-percentual"><input id="precoComissaoManual" type="number" min="0" max="100" step="0.01" placeholder="Da categoria" /><span>%</span></div>
+                <small>Preenchida, substitui o percentual da categoria; o mínimo continua válido.</small>
+              </div>
+              <div class="preco-campo">
+                <label for="precoAds">Amazon Ads</label>
+                <div class="preco-input-percentual"><input id="precoAds" type="number" min="0" max="50" step="0.1" value="0" /><span>%</span></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoReservaDevolucao">Reserva para devoluções/perdas</label>
+                <div class="preco-input-percentual"><input id="precoReservaDevolucao" type="number" min="0" max="30" step="0.1" value="0" /><span>%</span></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoCupom">Cupons e promoções custeados</label>
+                <div class="preco-input-percentual"><input id="precoCupom" type="number" min="0" max="50" step="0.1" value="0" /><span>%</span></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoDescontoLogistica">Desconto atual na logística</label>
+                <div class="preco-input-percentual"><input id="precoDescontoLogistica" type="number" min="0" max="100" step="0.1" value="0" /><span>%</span></div>
+                <small>Ex.: informe 50 se a campanha estiver ativa na sua conta.</small>
+              </div>
+            </div>
+
+            <div class="preco-opcoes">
+              <label><input id="precoParcelamento" type="checkbox" /> Incluir tarifa de parcelamento sem juros de 1,5%</label>
+              <label><input id="precoComissaoZero" type="checkbox" /> Minha oferta está com comissão Amazon zero</label>
+            </div>
+          </section>
+
+          <section class="cartao precificador-bloco">
+            <div class="precificador-bloco-titulo">
+              <span>4</span>
+              <div>
+                <h3>Peso, dimensões e logística</h3>
+                <p>O maior entre peso real e dimensional define a faixa logística.</p>
+              </div>
+            </div>
+
+            <div class="preco-campos preco-quatro-colunas">
+              <div class="preco-campo">
+                <label for="precoPeso">Peso do produto</label>
+                <div class="preco-input-unidade"><input id="precoPeso" type="number" min="0" step="1" value="200" /><span>g</span></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoComprimento">Comprimento</label>
+                <div class="preco-input-unidade"><input id="precoComprimento" type="number" min="0" step="0.1" value="0" /><span>cm</span></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoLargura">Largura</label>
+                <div class="preco-input-unidade"><input id="precoLargura" type="number" min="0" step="0.1" value="0" /><span>cm</span></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoAltura">Altura</label>
+                <div class="preco-input-unidade"><input id="precoAltura" type="number" min="0" step="0.1" value="0" /><span>cm</span></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoPesoEmbalagem">Peso adicional da embalagem</label>
+                <div class="preco-input-unidade"><input id="precoPesoEmbalagem" type="number" min="0" step="1" value="20" /><span>g</span></div>
+                <small>A tabela FBA considera 20 g de embalagem.</small>
+              </div>
+              <div class="preco-campo">
+                <label for="precoRegiao">Origem do DBA</label>
+                <select id="precoRegiao">
+                  <option value="sp-capital">SP Capital</option>
+                  <option value="capitais-sul-sudeste">Outras capitais do Sul/Sudeste</option>
+                  <option value="interior-sul-sudeste" selected>Interior do Sul/Sudeste</option>
+                  <option value="demais-regioes">Centro-Oeste, Norte e Nordeste</option>
+                </select>
+              </div>
+              <div class="preco-campo">
+                <label for="precoMesesEstoque">Meses médios no estoque FBA</label>
+                <input id="precoMesesEstoque" type="number" min="0" max="24" step="0.1" value="1" />
+              </div>
+              <div class="preco-campo">
+                <label for="precoTarifaManual">Substituir tarifa logística, opcional</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoTarifaManual" type="number" min="0" step="0.01" placeholder="Automática" /></div>
+                <small>Preenchido, este valor substitui a tabela automática.</small>
+              </div>
+              <div class="preco-campo">
+                <label for="precoTarifaOnsite">Tarifa FBA Onsite para comparar</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoTarifaOnsite" type="number" min="0" step="0.01" value="0" /></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoFreteProprio">Custo do frete próprio</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoFreteProprio" type="number" min="0" step="0.01" value="0" /></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoFreteCobrado">Frete cobrado do cliente</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoFreteCobrado" type="number" min="0" step="0.01" value="0" /></div>
+              </div>
+              <div class="preco-campo">
+                <label for="precoCustoFbaExtra">Outras tarifas FBA por unidade</label>
+                <div class="preco-input-dinheiro"><span>R$</span><input id="precoCustoFbaExtra" type="number" min="0" step="0.01" value="0" /></div>
+                <small>Coleta, remoção, estoque antigo ou outro custo não incluído acima.</small>
+              </div>
+            </div>
+          </section>
+
+          <div class="precificador-acoes">
+            <button class="botao-principal" id="botaoCalcularPreco" type="submit">Calcular preço seguro</button>
+            <button class="botao-secundario" id="botaoSalvarPrecificacao" type="button">Salvar produto</button>
+            <button class="botao-secundario" id="botaoLimparPrecificador" type="button">Novo cálculo</button>
+          </div>
+        </form>
+
+        <aside class="precificador-resultados">
+          <section class="cartao resultado-destaque">
+            <div class="resultado-etiqueta">Preço recomendado</div>
+            <div id="resultadoPrecoRecomendado" class="resultado-preco">R$ 0,00</div>
+            <div id="resultadoMeta" class="resultado-meta">Preencha os custos para calcular.</div>
+          </section>
+
+          <div class="resultado-cards">
+            <article class="cartao resultado-card">
+              <span>Preço de equilíbrio</span>
+              <strong id="resultadoEquilibrio">R$ 0,00</strong>
+              <small>Sem lucro e sem prejuízo</small>
+            </article>
+            <article class="cartao resultado-card">
+              <span>Lucro no preço atual</span>
+              <strong id="resultadoLucroAtual">R$ 0,00</strong>
+              <small id="resultadoMargemAtual">Margem de 0%</small>
+            </article>
+            <article class="cartao resultado-card">
+              <span>Peso tarifável</span>
+              <strong id="resultadoPesoTarifavel">0 g</strong>
+              <small id="resultadoTipoPeso">Peso real</small>
+            </article>
+          </div>
+
+          <section id="resultadoAlertas" class="resultado-alertas" aria-live="polite"></section>
+
+          <section class="cartao resultado-detalhes">
+            <div class="resultado-secao-topo">
+              <h3>Composição do preço recomendado</h3>
+              <button id="botaoCopiarResumo" class="botao-secundario" type="button">Copiar resumo</button>
+            </div>
+            <dl id="resultadoComposicao"></dl>
+          </section>
+
+          <section class="cartao resultado-detalhes">
+            <h3>Comparação por logística</h3>
+            <p class="resultado-ajuda">Use a comparação para decidir a modalidade. Tarifas manuais vazias não são estimadas.</p>
+            <div class="tabela-container tabela-precos">
+              <table>
+                <thead><tr><th>Modalidade</th><th>Tarifa</th><th>Preço sugerido</th><th>Lucro</th></tr></thead>
+                <tbody id="tabelaComparacaoLogistica"></tbody>
+              </table>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <section class="cartao precificacoes-salvas">
+        <div class="historico-topo">
+          <div>
+            <h2>Produtos salvos</h2>
+            <p>Abra um cálculo antigo para atualizar custos ou testar outra margem.</p>
+          </div>
+          <input id="filtroPrecificacoes" type="search" placeholder="Buscar produto ou SKU" />
+        </div>
+        <div class="tabela-container tabela-precos">
+          <table>
+            <thead>
+              <tr><th>Produto</th><th>Logística</th><th>Custo</th><th>Preço sugerido</th><th>Margem</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="tabelaPrecificacoes"></tbody>
+          </table>
+          <div id="estadoVazioPrecificacoes" class="estado-vazio">
+            <strong>Nenhum produto salvo</strong>
+            Faça um cálculo e use “Salvar produto”.
+          </div>
+        </div>
+      </section>
+
+      <aside class="precificador-aviso">
+        <strong>Importante:</strong> esta ferramenta produz estimativas com os valores informados e as tabelas públicas indicadas.
+        Tarifas promocionais, impostos e cobranças específicas da conta devem ser confirmados na Seller Central e com a contabilidade antes de publicar o preço.
+      </aside>
     </section>
   </main>
   </div>
@@ -1505,6 +1827,12 @@
     const supabaseClient = configuracaoPreenchida()
       ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
       : null;
+
+    window.gestorApp = {
+      obterSupabase: () => supabaseClient,
+      obterUsuario: () => usuarioAtual,
+      mostrarToast
+    };
 
     function hojeIso() {
       const hoje = new Date();
@@ -2276,5 +2604,6 @@
 
     inicializar();
   </script>
+  <script src="precificador.js?v=1"></script>
 </body>
 </html>
