@@ -275,6 +275,8 @@
     form: $("formPrecificador"), financeiro: $("moduloFinanceiro"), precificador: $("moduloPrecificador"),
     fornecedores: $("moduloFornecedores"),
     recomendado: $("resultadoPrecoRecomendado"), meta: $("resultadoMeta"), equilibrio: $("resultadoEquilibrio"),
+    lucroRecomendado: $("resultadoLucroRecomendado"), comissaoRecomendada: $("resultadoComissaoRecomendada"),
+    logisticaRecomendada: $("resultadoLogisticaRecomendada"),
     lucro: $("resultadoLucroAtual"), margem: $("resultadoMargemAtual"), peso: $("resultadoPesoTarifavel"),
     tipoPeso: $("resultadoTipoPeso"), alertas: $("resultadoAlertas"), composicao: $("resultadoComposicao"),
     comparacao: $("tabelaComparacaoLogistica"), salvar: $("botaoSalvarPrecificacao"), limpar: $("botaoLimparPrecificador"),
@@ -376,6 +378,9 @@
     ultimoResultado = { dados: d, peso, equilibrio, recomendado, atual, cenarioRecomendado };
     ui.recomendado.textContent = recomendado === null ? "Indisponível" : moeda(recomendado);
     ui.meta.textContent = recomendado === null ? "Revise os campos indicados nos alertas." : `Para obter ${percentual(d.margemDesejada)} de margem líquida em ${nomeLogistica(d.logistica)}.`;
+    ui.lucroRecomendado.textContent = cenarioRecomendado?.valido ? moeda(cenarioRecomendado.lucro) : "—";
+    ui.comissaoRecomendada.textContent = cenarioRecomendado?.valido ? moeda(cenarioRecomendado.comissao) : "—";
+    ui.logisticaRecomendada.textContent = cenarioRecomendado?.valido ? moeda(cenarioRecomendado.logistica.liquida) : "—";
     ui.equilibrio.textContent = equilibrio === null ? "—" : moeda(equilibrio);
     ui.lucro.textContent = d.precoAtual <= 0 ? "—" : atual.valido ? moeda(atual.lucro) : "—";
     ui.lucro.classList.toggle("negativo", Boolean(d.precoAtual > 0 && atual.valido && atual.lucro < 0));
@@ -404,8 +409,8 @@
     ui.form.classList.toggle("mostrar-avancado", aberto);
     ui.avancado.setAttribute("aria-expanded", String(aberto));
     ui.avancado.innerHTML = aberto
-      ? '<span aria-hidden="true">−</span> Ocultar custos e opções avançadas'
-      : '<span aria-hidden="true">＋</span> Mostrar custos e opções avançadas';
+      ? '<span aria-hidden="true">−</span> Ocultar opções avançadas'
+      : '<span aria-hidden="true">＋</span> Mostrar opções avançadas';
   }
 
   function limparFormulario() {

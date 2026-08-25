@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Gestor financeiro, precificador Amazon e cadastro de fornecedores para pequenas empresas." />
   <title>Gestor do E-commerce</title>
-  <link rel="stylesheet" href="precificador.css?v=2" />
+  <link rel="stylesheet" href="precificador.css?v=3" />
   <link rel="stylesheet" href="fornecedores.css?v=1" />
+  <link rel="stylesheet" href="financeiro.css?v=1" />
 
   <script>
     try {
@@ -737,27 +738,31 @@
       </button>
     </nav>
 
-    <div id="moduloFinanceiro">
+    <div id="moduloFinanceiro" class="financeiro-modulo">
     <section class="resumo" aria-label="Resumo financeiro">
-      <article class="cartao cartao-resumo">
+      <article class="cartao cartao-resumo resumo-receitas">
+        <span class="resumo-icone" aria-hidden="true">↗</span>
         <div class="rotulo">Total de receitas</div>
         <div id="totalReceitas" class="valor-resumo positivo">R$ 0,00</div>
         <div class="status">Entradas, vendas e outros recebimentos.</div>
       </article>
 
-      <article class="cartao cartao-resumo">
+      <article class="cartao cartao-resumo resumo-despesas">
+        <span class="resumo-icone" aria-hidden="true">↘</span>
         <div class="rotulo">Total de despesas</div>
         <div id="totalDespesas" class="valor-resumo negativo">R$ 0,00</div>
         <div class="status">Embalagens, produtos, taxas, contabilidade e outros custos.</div>
       </article>
 
-      <article class="cartao cartao-resumo">
+      <article class="cartao cartao-resumo resumo-saldo">
+        <span class="resumo-icone" aria-hidden="true">R$</span>
         <div class="rotulo">Saldo atual</div>
         <div id="saldoAtual" class="valor-resumo neutro">R$ 0,00</div>
         <div id="textoSaldo" class="status">Cadastre seus primeiros lançamentos.</div>
       </article>
 
-      <article class="cartao cartao-resumo">
+      <article class="cartao cartao-resumo resumo-situacao">
+        <span class="resumo-icone" aria-hidden="true">◎</span>
         <div class="rotulo">Situação do negócio</div>
         <div id="situacaoNegocio" class="valor-resumo neutro">Iniciando</div>
         <div id="detalheSituacao" class="status">O sistema mostrará quanto falta para recuperar os custos.</div>
@@ -773,7 +778,11 @@
 
     <section class="grade-principal">
       <aside class="cartao painel formulario-painel">
-        <h2 id="tituloFormulario">Novo lançamento</h2>
+        <div class="financeiro-painel-cabecalho">
+          <span class="financeiro-selo">NOVO REGISTRO</span>
+          <h2 id="tituloFormulario">Novo lançamento</h2>
+          <p>Registre uma entrada ou saída para manter o saldo sempre atualizado.</p>
+        </div>
 
         <form id="formLancamento">
           <input type="hidden" id="lancamentoId" />
@@ -879,7 +888,11 @@
 
       <section class="cartao painel">
         <div class="historico-topo">
-          <h2>Histórico de lançamentos</h2>
+          <div class="financeiro-painel-cabecalho">
+            <span class="financeiro-selo">MOVIMENTAÇÕES</span>
+            <h2>Histórico de lançamentos</h2>
+            <p>Pesquise, filtre e confira todas as entradas e despesas cadastradas.</p>
+          </div>
           <button class="botao-secundario" type="button" onclick="window.print()">
             Imprimir relatório
           </button>
@@ -953,7 +966,7 @@
 
     <section id="moduloPrecificador" class="precificador-modulo oculto" aria-labelledby="tituloPrecificador">
       <header class="precificador-cabecalho cartao">
-        <div>
+        <div class="precificador-cabecalho-conteudo">
           <span class="precificador-selo">AMAZON BRASIL</span>
           <h2 id="tituloPrecificador">Precificador de produtos</h2>
           <p>
@@ -973,6 +986,16 @@
       <div class="precificador-grade">
         <form id="formPrecificador" class="precificador-formulario" novalidate>
           <input type="hidden" id="precoId" />
+
+          <div class="precificador-modo">
+            <div>
+              <strong>Modo essencial</strong>
+              <span>Os campos principais ficam visíveis. Abra os avançados somente quando precisar.</span>
+            </div>
+            <button id="botaoOpcoesAvancadas" class="botao-opcoes-avancadas" type="button" aria-expanded="false">
+              <span aria-hidden="true">＋</span> Mostrar opções avançadas
+            </button>
+          </div>
 
           <section class="cartao precificador-bloco">
             <div class="precificador-bloco-titulo">
@@ -1015,10 +1038,6 @@
               </div>
             </div>
           </section>
-
-          <button id="botaoOpcoesAvancadas" class="botao-opcoes-avancadas" type="button" aria-expanded="false">
-            <span aria-hidden="true">＋</span> Mostrar custos e opções avançadas
-          </button>
 
           <section class="cartao precificador-bloco">
             <div class="precificador-bloco-titulo">
@@ -1197,9 +1216,26 @@
 
         <aside class="precificador-resultados">
           <section class="cartao resultado-destaque">
-            <div class="resultado-etiqueta">Preço recomendado</div>
+            <div class="resultado-destaque-topo">
+              <div class="resultado-etiqueta">Preço recomendado</div>
+              <span class="resultado-automatico"><i></i> Atualização automática</span>
+            </div>
             <div id="resultadoPrecoRecomendado" class="resultado-preco">R$ 0,00</div>
             <div id="resultadoMeta" class="resultado-meta">Preencha os custos para calcular.</div>
+            <div class="resultado-destaque-resumo">
+              <div>
+                <span>Lucro por unidade</span>
+                <strong id="resultadoLucroRecomendado">R$ 0,00</strong>
+              </div>
+              <div>
+                <span>Comissão Amazon</span>
+                <strong id="resultadoComissaoRecomendada">R$ 0,00</strong>
+              </div>
+              <div>
+                <span>Tarifa logística</span>
+                <strong id="resultadoLogisticaRecomendada">R$ 0,00</strong>
+              </div>
+            </div>
           </section>
 
           <div class="resultado-cards">
@@ -2790,7 +2826,7 @@
 
     inicializar();
   </script>
-  <script src="precificador.js?v=2"></script>
+  <script src="precificador.js?v=3"></script>
   <script src="fornecedores.js?v=1"></script>
   <script>
     (() => {
